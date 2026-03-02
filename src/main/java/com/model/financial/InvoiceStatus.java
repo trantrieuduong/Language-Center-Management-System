@@ -1,4 +1,8 @@
 package com.model.financial;
 
-public class InvoiceStatus {
+public enum InvoiceStatus {
+    DRAFT,
+    ISSUED,
+    PAID,
+    CANCELED
 }

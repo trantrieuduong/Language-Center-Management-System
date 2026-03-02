@@ -1,6 +1,6 @@
 package com.model.user;
 
-public enum Status {
+public enum UserStatus {
     ACTIVE,
     INACTIVE
 }

@@ -4,8 +4,8 @@
              xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence
                                  https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd"
              version="3.0">
-
     <persistence-unit name="dataSource" transaction-type="RESOURCE_LOCAL">
+        <class>com.tutorialspoint.eclipselink.entity.Clas</class>
         <properties>
             <property name="jakarta.persistence.jdbc.driver" value="com.mysql.cj.jdbc.Driver"/>
             <property name="jakarta.persistence.jdbc.url"
@@ -17,6 +17,7 @@
             <property name="hibernate.show_sql" value="true"/>
             <property name="hibernate.format_sql" value="true"/>
             <property name="hibernate.hbm2ddl.auto" value="validate"/>
+            <property name="eclipselink.ddl-generation" value="update"/>
         </properties>
     </persistence-unit>
 

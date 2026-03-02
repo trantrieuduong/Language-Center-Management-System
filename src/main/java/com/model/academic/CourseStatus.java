@@ -1,4 +1,6 @@
 package com.model.academic;
 
-public class CourseStatus {
+public enum CourseStatus {
+    ACTIVE,
+    INACTIVE
 }

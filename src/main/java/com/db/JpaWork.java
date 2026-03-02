@@ -1,4 +1,4 @@
-package vn.ute.db;
+package com.db;
 
 public class JpaWork {
 }

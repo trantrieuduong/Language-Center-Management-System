@@ -1,4 +1,7 @@
 package com.model.user;
 
-public class UserRole {
+public enum UserRole {
+    ADMIN,
+    TEACHER,
+    STUDENT
 }

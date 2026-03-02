@@ -1,7 +1,6 @@
 package com.model.user;
 
-public enum Role {
-    ADMIN,
+public enum StaffRole {
     ACCOUNTANT,
     CONSULTANT
 }
