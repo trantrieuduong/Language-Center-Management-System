@@ -49,7 +49,7 @@ public class StudentRepository extends BaseRepository<Student, Long> {
         }
     }
 
-    /** Soft-delete: set status to INACTIVE instead of physically deleting. */
+    /** Soft-delete: set status to INACTIVE */
     public void softDelete(Long studentId) {
         EntityManager em = em();
         EntityTransaction tx = em.getTransaction();

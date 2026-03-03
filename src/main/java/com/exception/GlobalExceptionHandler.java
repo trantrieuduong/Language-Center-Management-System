@@ -5,10 +5,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 
-/**
- * Catches any uncaught exception on any thread (including EDT) so the app
- * never dies silently. Registered once at startup via {@link #register()}.
- */
 public class GlobalExceptionHandler implements Thread.UncaughtExceptionHandler {
 
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
@@ -16,7 +12,6 @@ public class GlobalExceptionHandler implements Thread.UncaughtExceptionHandler {
     public static void register() {
         GlobalExceptionHandler handler = new GlobalExceptionHandler();
         Thread.setDefaultUncaughtExceptionHandler(handler);
-        // also catch EDT exceptions (Java 9+) via system property
         System.setProperty("sun.awt.exception.handler", GlobalExceptionHandler.class.getName());
     }
 
@@ -31,7 +26,6 @@ public class GlobalExceptionHandler implements Thread.UncaughtExceptionHandler {
                 JOptionPane.ERROR_MESSAGE));
     }
 
-    /** Called by AWT for EDT exceptions via the system property above. */
     public void handle(Throwable throwable) {
         uncaughtException(Thread.currentThread(), throwable);
     }

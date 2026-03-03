@@ -17,15 +17,12 @@ public class ScheduleRepository extends BaseRepository<Schedule, Long> {
 
     @Override
     public List<Schedule> findAll() {
-        EntityManager em = em();
-        try {
+        try (EntityManager em = em()) {
             return em.createQuery(
                     "SELECT s FROM Schedule s LEFT JOIN FETCH s.aClass LEFT JOIN FETCH s.room ORDER BY s.date, s.startTime",
                     Schedule.class).getResultList();
         } catch (Exception e) {
             throw new SystemException("Lỗi truy vấn lịch học: " + e.getMessage(), e);
-        } finally {
-            em.close();
         }
     }
 
@@ -36,13 +33,12 @@ public class ScheduleRepository extends BaseRepository<Schedule, Long> {
      */
     public List<Schedule> findOverlapping(Long roomId, LocalDate date,
             LocalTime startTime, LocalTime endTime) {
-        EntityManager em = em();
-        try {
+        try (EntityManager em = em()) {
             return em.createQuery(
-                    "SELECT s FROM Schedule s WHERE s.room.roomID = :rid " +
-                            "AND s.date = :date " +
-                            "AND s.startTime < :end AND s.endTime > :start",
-                    Schedule.class)
+                            "SELECT s FROM Schedule s WHERE s.room.roomID = :rid " +
+                                    "AND s.date = :date " +
+                                    "AND s.startTime < :end AND s.endTime > :start",
+                            Schedule.class)
                     .setParameter("rid", roomId)
                     .setParameter("date", date)
                     .setParameter("start", startTime)
@@ -50,8 +46,6 @@ public class ScheduleRepository extends BaseRepository<Schedule, Long> {
                     .getResultList();
         } catch (Exception e) {
             throw new SystemException("Lỗi kiểm tra trùng lịch: " + e.getMessage(), e);
-        } finally {
-            em.close();
         }
     }
 

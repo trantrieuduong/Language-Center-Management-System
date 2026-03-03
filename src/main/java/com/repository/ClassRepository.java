@@ -14,45 +14,36 @@ public class ClassRepository extends BaseRepository<Class, Long> {
 
     @Override
     public List<Class> findAll() {
-        EntityManager em = em();
-        try {
+        try (EntityManager em = em()) {
             return em.createQuery(
                     "SELECT c FROM Class c LEFT JOIN FETCH c.course LEFT JOIN FETCH c.teacher ORDER BY c.className",
                     Class.class).getResultList();
         } catch (Exception e) {
             throw new SystemException("Lỗi truy vấn lớp học: " + e.getMessage(), e);
-        } finally {
-            em.close();
         }
     }
 
     public List<Class> findByTeacher(Long teacherId) {
-        EntityManager em = em();
-        try {
+        try (EntityManager em = em()) {
             return em.createQuery(
-                    "SELECT c FROM Class c WHERE c.teacher.teacherID = :tid ORDER BY c.className",
-                    Class.class)
+                            "SELECT c FROM Class c WHERE c.teacher.teacherID = :tid ORDER BY c.className",
+                            Class.class)
                     .setParameter("tid", teacherId)
                     .getResultList();
         } catch (Exception e) {
             throw new SystemException("Lỗi truy vấn lớp học theo giáo viên: " + e.getMessage(), e);
-        } finally {
-            em.close();
         }
     }
 
     public long countEnrollments(Long classId) {
-        EntityManager em = em();
-        try {
+        try (EntityManager em = em()) {
             Long count = em.createQuery(
-                    "SELECT COUNT(e) FROM Enrollment e WHERE e.aclass.classID = :cid", Long.class)
+                            "SELECT COUNT(e) FROM Enrollment e WHERE e.aclass.classID = :cid", Long.class)
                     .setParameter("cid", classId)
                     .getSingleResult();
             return count == null ? 0 : count;
         } catch (Exception e) {
             throw new SystemException("Lỗi đếm số học viên lớp: " + e.getMessage(), e);
-        } finally {
-            em.close();
         }
     }
 }

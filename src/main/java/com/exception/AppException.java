@@ -1,9 +1,5 @@
 package com.exception;
 
-/**
- * Root of the application exception hierarchy.
- * All domain / application exceptions extend this class.
- */
 public abstract class AppException extends RuntimeException {
 
     private final String userMessage;
@@ -18,7 +14,6 @@ public abstract class AppException extends RuntimeException {
         this.userMessage = userMessage;
     }
 
-    /** Human-readable message safe to display in UI dialogs. */
     public String getUserMessage() {
         return userMessage;
     }

@@ -5,9 +5,6 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import java.awt.*;
 
-/**
- * General UI utilities: fonts, table styling, EDT helpers.
- */
 public class UiUtil {
 
     public static final Font FONT_REGULAR = new Font("Segoe UI", Font.PLAIN, 13);

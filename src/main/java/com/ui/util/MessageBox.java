@@ -2,9 +2,6 @@ package com.ui.util;
 
 import javax.swing.*;
 
-/**
- * Wrapper around JOptionPane for consistent Vietnamese-language dialogs.
- */
 public class MessageBox {
 
     private MessageBox() {

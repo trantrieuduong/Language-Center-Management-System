@@ -14,14 +14,11 @@ public class RoomRepository extends BaseRepository<Room, Long> {
 
     @Override
     public List<Room> findAll() {
-        EntityManager em = em();
-        try {
+        try (EntityManager em = em()) {
             return em.createQuery("SELECT r FROM Room r ORDER BY r.roomName", Room.class)
                     .getResultList();
         } catch (Exception e) {
             throw new SystemException("Lỗi truy vấn phòng học: " + e.getMessage(), e);
-        } finally {
-            em.close();
         }
     }
 }
