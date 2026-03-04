@@ -1,11 +1,11 @@
 package com.service.impl;
 
-import com.model.user.UserAccount;
+import at.favre.lib.crypto.bcrypt.BCrypt;
+import com.model.user.*;
 import com.repository.UserAccountRepository;
 import com.security.PermissionChecker;
 
 import java.util.List;
-import java.util.UUID;
 
 public class UserAccountServiceImpl {
     private final UserAccountRepository repo = new UserAccountRepository();
@@ -15,28 +15,26 @@ public class UserAccountServiceImpl {
         return repo.findAll();
     }
 
-    public UserAccount findById(UUID id) {
-        PermissionChecker.requireAdmin();
-        return repo.findById(id)
-                .orElseThrow(() -> new com.exception.BusinessException("Không tìm thấy tài khoản."));
-    }
-
-    public UserAccount save(UserAccount account) {
-        PermissionChecker.requireAdmin();
-        if (account.getUsername() == null || account.getUsername().isBlank()
-                || account.getPasswordHash() == null || account.getPasswordHash().isBlank())
-            throw new com.exception.ValidationException("Tên đăng nhập và mật khẩu không được để trống.");
-
-        return repo.save(account);
-    }
-
     public UserAccount update(UserAccount account) {
         PermissionChecker.requireAdmin();
         return repo.update(account);
     }
 
-    public void delete(UUID id) {
+    public UserAccount save(String username, String password, UserRole role, Object relatedObject) {
         PermissionChecker.requireAdmin();
-        repo.delete(id);
+
+        UserAccount account = UserAccount.builder()
+                .username(username.trim())
+                .passwordHash(BCrypt.withDefaults().hashToString(12, password.toCharArray()))
+                .role(role)
+                .build();
+
+        switch (role) {
+            case TEACHER -> account.setTeacher((Teacher) relatedObject);
+            case STUDENT -> account.setStudent((Student) relatedObject);
+            case STAFF -> account.setStaff((Staff) relatedObject);
+        }
+
+        return repo.update(account);
     }
 }

@@ -1,11 +1,9 @@
 package com.service.impl;
 
-import at.favre.lib.crypto.bcrypt.BCrypt;
 import com.dto.StudentDTO;
 import com.exception.BusinessException;
 import com.exception.ValidationException;
 import com.model.user.Student;
-import com.model.user.UserAccount;
 import com.model.user.UserRole;
 import com.model.user.UserStatus;
 import com.repository.StudentRepository;
@@ -20,6 +18,7 @@ import java.util.List;
 public class StudentServiceImpl implements BaseService<Student, Long, StudentDTO> {
 
     private final StudentRepository repo = new StudentRepository();
+    private final UserAccountServiceImpl userAccountService = new UserAccountServiceImpl();
 
     @Override
     public List<Student> findAll() {
@@ -68,6 +67,8 @@ public class StudentServiceImpl implements BaseService<Student, Long, StudentDTO
                 throw new BusinessException("Tên đăng nhập '" + dto.getUsername() + "' đã tồn tại.");
             }
 
+        if (dto.getPassword() == null || dto.getPassword().isBlank())
+            throw new ValidationException("Mật khẩu không được để trống.");
 
         Student student = Student.builder()
                 .fullName(dto.getFullName().trim())
@@ -81,16 +82,8 @@ public class StudentServiceImpl implements BaseService<Student, Long, StudentDTO
         Student saved = repo.save(student);
 
         // Create linked UserAccount if username + password provided
-        if (dto.getUsername() != null && !dto.getUsername().isBlank()
-                && dto.getPassword() != null && !dto.getPassword().isBlank()) {
-            UserAccount account = UserAccount.builder()
-                    .username(dto.getUsername().trim())
-                    .passwordHash(BCrypt.withDefaults().hashToString(12, dto.getPassword().toCharArray()))
-                    .role(UserRole.STUDENT)
-                    .student(saved)
-                    .build();
-            accountRepo.save(account);
-        }
+        userAccountService.save(dto.getUsername(), dto.getUsername(), UserRole.STUDENT, saved);
+
         return saved;
     }
 

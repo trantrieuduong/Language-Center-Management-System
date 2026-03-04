@@ -1,11 +1,9 @@
 package com.service.impl;
 
-import at.favre.lib.crypto.bcrypt.BCrypt;
 import com.dto.StaffDTO;
 import com.exception.BusinessException;
 import com.exception.ValidationException;
 import com.model.user.Staff;
-import com.model.user.UserAccount;
 import com.model.user.UserRole;
 import com.model.user.UserStatus;
 import com.repository.StaffRepository;
@@ -19,6 +17,7 @@ import java.util.List;
 public class StaffServiceImpl implements BaseService<Staff, Long, StaffDTO> {
 
     private final StaffRepository repo = new StaffRepository();
+    private final UserAccountServiceImpl userAccountService = new UserAccountServiceImpl();
 
     @Override
     public List<Staff> findAll() {
@@ -55,6 +54,9 @@ public class StaffServiceImpl implements BaseService<Staff, Long, StaffDTO> {
                 && accountRepo.findByUsername(dto.getUsername().trim()).isPresent())
             throw new BusinessException("Tên đăng nhập '" + dto.getUsername() + "' đã tồn tại.");
 
+        if (dto.getPassword() == null || dto.getPassword().isBlank())
+            throw new ValidationException("Mật khẩu không được để trống.");
+
         Staff staff = Staff.builder()
                 .fullName(dto.getFullName().trim())
                 .role(dto.getRole())
@@ -65,16 +67,8 @@ public class StaffServiceImpl implements BaseService<Staff, Long, StaffDTO> {
         Staff saved = repo.save(staff);
 
         // Create linked UserAccount
-        if (dto.getUsername() != null && !dto.getUsername().isBlank()
-                && dto.getPassword() != null && !dto.getPassword().isBlank()) {
-            UserAccount account = UserAccount.builder()
-                    .username(dto.getUsername().trim())
-                    .passwordHash(BCrypt.withDefaults().hashToString(12, dto.getPassword().toCharArray()))
-                    .role(UserRole.STAFF)
-                    .staff(saved)
-                    .build();
-            accountRepo.save(account);
-        }
+        userAccountService.save(dto.getUsername(), dto.getUsername(), UserRole.STAFF, saved);
+
         return saved;
     }
 

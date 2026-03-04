@@ -1,11 +1,9 @@
 package com.service.impl;
 
-import at.favre.lib.crypto.bcrypt.BCrypt;
 import com.dto.TeacherDTO;
 import com.exception.BusinessException;
 import com.exception.ValidationException;
 import com.model.user.Teacher;
-import com.model.user.UserAccount;
 import com.model.user.UserRole;
 import com.model.user.UserStatus;
 import com.repository.TeacherRepository;
@@ -19,6 +17,7 @@ import java.util.List;
 public class TeacherServiceImpl implements BaseService<Teacher, Long, TeacherDTO> {
 
     private final TeacherRepository repo = new TeacherRepository();
+    private final UserAccountServiceImpl userAccountService = new UserAccountServiceImpl();
 
     @Override
     public List<Teacher> findAll() {
@@ -55,6 +54,9 @@ public class TeacherServiceImpl implements BaseService<Teacher, Long, TeacherDTO
                 && accountRepo.findByUsername(dto.getUsername().trim()).isPresent())
             throw new BusinessException("Tên đăng nhập '" + dto.getUsername() + "' đã tồn tại.");
 
+        if (dto.getPassword() == null || dto.getPassword().isBlank())
+            throw new ValidationException("Mật khẩu không được để trống.");
+
         Teacher teacher = Teacher.builder()
                 .fullName(dto.getFullName().trim())
                 .phone(dto.getPhone())
@@ -65,16 +67,8 @@ public class TeacherServiceImpl implements BaseService<Teacher, Long, TeacherDTO
         Teacher saved = repo.save(teacher);
 
         // Create linked UserAccount
-        if (dto.getUsername() != null && !dto.getUsername().isBlank()
-                && dto.getPassword() != null && !dto.getPassword().isBlank()) {
-            UserAccount account = UserAccount.builder()
-                    .username(dto.getUsername().trim())
-                    .passwordHash(BCrypt.withDefaults().hashToString(12, dto.getPassword().toCharArray()))
-                    .role(UserRole.TEACHER)
-                    .teacher(saved)
-                    .build();
-            accountRepo.save(account);
-        }
+        userAccountService.save(dto.getUsername(), dto.getUsername(), UserRole.TEACHER, saved);
+
         return saved;
     }
 

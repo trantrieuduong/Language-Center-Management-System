@@ -3,8 +3,11 @@ package com.ui.panel;
 import at.favre.lib.crypto.bcrypt.BCrypt;
 import com.exception.AppException;
 import com.model.user.UserAccount;
-import com.repository.UserAccountRepository;
+import com.model.user.UserRole;
+import com.model.user.UserStatus;
 import com.security.PermissionChecker;
+import com.service.impl.UserAccountServiceImpl;
+import com.stream.UserAccountStreamQueries;
 import com.ui.util.MessageBox;
 import com.ui.util.UiUtil;
 import org.slf4j.Logger;
@@ -20,12 +23,30 @@ public class UserAccountsPanel extends JPanel {
 
     private static final Logger log = LoggerFactory.getLogger(UserAccountsPanel.class);
 
-    private final UserAccountRepository repo = new UserAccountRepository();
+    private final UserAccountServiceImpl service = new UserAccountServiceImpl();
     private final AccountTableModel model = new AccountTableModel();
     private final JTable table = new JTable(model);
     private final JTextField tfSearch = UiUtil.searchField("Tìm theo username...");
     private final JButton btnResetPwd = UiUtil.primaryButton("Đặt lại mật khẩu");
     private final JButton btnRefresh = new JButton("Làm mới");
+    private final JComboBox<UserRole> cbRoles = buildRoleComboBox();
+
+    private static JComboBox<UserRole> buildRoleComboBox() {
+        JComboBox<UserRole> cb = new JComboBox<>();
+        cb.addItem(null); // "Tất cả"
+        for (UserRole r : UserRole.values())
+            cb.addItem(r);
+        cb.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public java.awt.Component getListCellRendererComponent(
+                    JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                setText(value == null ? "Tất cả" : value.toString());
+                return this;
+            }
+        });
+        return cb;
+    }
 
     public UserAccountsPanel() {
         setLayout(new BorderLayout(10, 10));
@@ -47,6 +68,8 @@ public class UserAccountsPanel extends JPanel {
 
         JPanel searchBar = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
         searchBar.setOpaque(false);
+        searchBar.add(new JLabel("Vai trò:"));
+        searchBar.add(cbRoles);
         searchBar.add(new JLabel("Tìm kiếm:"));
         searchBar.add(tfSearch);
         JButton btnSearch = UiUtil.primaryButton("Tìm");
@@ -78,8 +101,13 @@ public class UserAccountsPanel extends JPanel {
 
     private void wireEvents() {
         btnResetPwd.addActionListener(e -> onResetPassword());
-        btnRefresh.addActionListener(e -> loadData(null));
+        btnRefresh.addActionListener(e -> {
+            tfSearch.setText("");
+            cbRoles.setSelectedItem(null);
+            loadData(null);
+        });
         tfSearch.addActionListener(e -> loadData(tfSearch.getText().trim()));
+        cbRoles.addActionListener(e -> loadData(tfSearch.getText().trim()));
     }
 
     private void onResetPassword() {
@@ -123,7 +151,7 @@ public class UserAccountsPanel extends JPanel {
                 PermissionChecker.requireAdmin();
                 String hashed = BCrypt.withDefaults().hashToString(12, newPwd.toCharArray());
                 selected.setPasswordHash(hashed);
-                repo.update(selected);
+                service.update(selected);
                 return null;
             }
 
@@ -142,18 +170,23 @@ public class UserAccountsPanel extends JPanel {
 
     private void loadData(String keyword) {
         btnResetPwd.setEnabled(false);
+        UserRole selectedRole = (UserRole) cbRoles.getSelectedItem();
 
         new SwingWorker<List<UserAccount>, Void>() {
             @Override
             protected List<UserAccount> doInBackground() {
                 PermissionChecker.requireAdmin();
-                List<UserAccount> all = repo.findAll();
-                if (keyword == null || keyword.isBlank())
-                    return all;
+                List<UserAccount> all = service.findAll();
 
-                return all.stream()
-                        .filter(u -> u.getUsername().toLowerCase().contains(keyword.toLowerCase()))
-                        .toList();
+                // filter by role
+                if (selectedRole != null)
+                    all = UserAccountStreamQueries.filterByRole(all, selectedRole);
+
+                // filter by keyword
+                if (keyword != null && !keyword.isBlank())
+                    all = UserAccountStreamQueries.searchByUsername(all, keyword);
+
+                return all;
             }
 
             @Override
