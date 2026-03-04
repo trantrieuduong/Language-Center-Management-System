@@ -33,6 +33,7 @@ public class Room {
 
     @Column(name = "status")
     @Builder.Default
+    @Enumerated(EnumType.STRING)
     RoomStatus status = RoomStatus.ACTIVE;
 
     @CreationTimestamp
