@@ -32,10 +32,13 @@ public class Class {
     @JoinColumn(name = "teacher_id", nullable = false)
     Teacher teacher;
 
+    @Column(nullable = false)
     LocalDate startDate;
 
+    @Column(nullable = false)
     LocalDate endDate;
 
+    @Column(nullable = false)
     @Builder.Default
     Integer maxStudent = 0;
 
@@ -44,5 +47,6 @@ public class Class {
     Room room;
 
     @Enumerated(EnumType.STRING)
-    RoomStatus status;
+    @Builder.Default
+    ClassStatus status = ClassStatus.ACTIVE;
 }

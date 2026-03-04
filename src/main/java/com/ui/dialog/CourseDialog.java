@@ -12,7 +12,7 @@ import java.awt.*;
 import java.math.BigDecimal;
 
 public class CourseDialog extends JDialog {
-    private boolean isEdit = false;
+    private final boolean isEdit;
 
     @Getter
     private CourseDTO result;

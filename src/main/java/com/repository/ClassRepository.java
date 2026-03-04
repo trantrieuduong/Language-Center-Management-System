@@ -35,6 +35,18 @@ public class ClassRepository extends BaseRepository<Class, Long> {
         }
     }
 
+    public List<Class> searchByName(String keyword) {
+        try (EntityManager em = em()) {
+            return em.createQuery(
+                            "SELECT c FROM Class c WHERE LOWER(c.className) LIKE :kw ORDER BY c.className",
+                            Class.class)
+                    .setParameter("kw", "%" + keyword.toLowerCase() + "%")
+                    .getResultList();
+        } catch (Exception e) {
+            throw new SystemException("Lỗi tìm kiếm lớp học: " + e.getMessage(), e);
+        }
+    }
+
     public long countEnrollments(Long classId) {
         try (EntityManager em = em()) {
             Long count = em.createQuery(
