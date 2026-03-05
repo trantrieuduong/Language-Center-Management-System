@@ -101,6 +101,6 @@ public class TeacherServiceImpl implements BaseService<Teacher, Long, TeacherDTO
         Teacher teacher = repo.findById(id)
                 .orElseThrow(() -> new BusinessException("Không tìm thấy giáo viên."));
         teacher.setStatus(UserStatus.INACTIVE);
-        repo.save(teacher);
+        repo.update(teacher);
     }
 }

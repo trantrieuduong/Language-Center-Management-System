@@ -120,7 +120,7 @@ public class StudentServiceImpl implements BaseService<Student, Long, StudentDTO
         Student student = repo.findById(id)
                 .orElseThrow(() -> new BusinessException("Không tìm thấy học viên với ID: " + id));
         student.setStatus(UserStatus.INACTIVE);
-        repo.save(student);
+        repo.update(student);
     }
 
     // ---- validation ----

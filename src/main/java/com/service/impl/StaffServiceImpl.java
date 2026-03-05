@@ -99,6 +99,6 @@ public class StaffServiceImpl implements BaseService<Staff, Long, StaffDTO> {
         PermissionChecker.requireAdmin();
         Staff staff = repo.findById(id).orElseThrow(() -> new BusinessException("Không tìm thấy nhân viên."));
         staff.setStatus(UserStatus.INACTIVE);
-        repo.save(staff);
+        repo.update(staff);
     }
 }
