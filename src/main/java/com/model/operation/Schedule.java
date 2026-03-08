@@ -17,8 +17,8 @@ import java.time.LocalTime;
 @AllArgsConstructor
 @Table(name = "schedule", uniqueConstraints = {
         @UniqueConstraint(
-                name = "unq_room_time_in_schedule",
-                columnNames = {"class_id", "room_id", "date", "start_time", "end_time"}
+                name = "unq_schedule",
+                columnNames = {"class_id", "room_id", "schedule_date", "start_time", "end_time"}
         )
 })
 public class Schedule {
@@ -35,7 +35,7 @@ public class Schedule {
     @JoinColumn(name = "room_id", nullable = false)
     Room room;
 
-    @Column(name = "date")
+    @Column(name = "schedule_date", nullable = false)
     LocalDate date;
 
     @Column(name = "start_time")

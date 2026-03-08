@@ -6,6 +6,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+
 @Getter
 @Setter
 @AllArgsConstructor
@@ -13,6 +16,7 @@ import lombok.Setter;
 public class AttendanceDTO {
     Long attendanceID;
     Long studentID;
-    Long classID;
+    LocalDate date;
+    LocalTime startTime;
     AttendanceStatus status;
 }

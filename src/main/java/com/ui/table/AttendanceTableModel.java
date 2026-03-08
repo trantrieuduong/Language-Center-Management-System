@@ -3,13 +3,19 @@ package com.ui.table;
 import com.model.operation.Attendance;
 
 import javax.swing.table.AbstractTableModel;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
 public class AttendanceTableModel extends AbstractTableModel {
+    // Có thêm cột "Giờ bắt đầu" do một ngày một lớp có thể có nhiều giờ học
     private static final String[] COLUMNS = {
-            "ID", "Mã học viên", "Mã lớp học", "Trạng thái"
+            "Mã học viên", "Tên học viên", "Tên lớp học", "Ngày học", "Giờ bắt đầu", "Trạng thái"
     };
+
+    private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private final DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("HH:mm");
+
 
     private List<Attendance> data = new ArrayList<>();
 
@@ -41,10 +47,12 @@ public class AttendanceTableModel extends AbstractTableModel {
     public Object getValueAt(int row, int col) {
         Attendance a = data.get(row);
         return switch (col) {
-            case 0 -> a.getAttendanceID();
-            case 1 -> a.getStudent() != null ? a.getStudent().getStudentID() : "";
-            case 2 -> a.getAClass() != null ? a.getAClass().getClassID() : "";
-            case 3 -> a.getStatus() != null ? a.getStatus() : "";
+            case 0 -> a.getStudent() != null ? a.getStudent().getStudentID() : "";
+            case 1 -> a.getStudent() != null ? a.getStudent().getFullName() : "";
+            case 2 -> a.getAClass() != null ? a.getAClass().getClassName() : "";
+            case 3 -> a.getSchedule() != null ? a.getSchedule().getDate().format(dateFormatter) : "";
+            case 4 -> a.getSchedule() != null ? a.getSchedule().getStartTime().format(timeFormatter) : "";
+            case 5 -> a.getStatus() != null ? a.getStatus() : "";
             default -> "";
         };
     }

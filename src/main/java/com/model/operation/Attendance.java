@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -18,8 +19,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Table(name = "attendance", uniqueConstraints = {
         @UniqueConstraint(
-                name = "unq_student_class_in_attendance",
-                columnNames = {"student_id", "class_id"}
+                name = "unq_attendance",
+                columnNames = {"schedule_id", "student_id"}
         )
 })
 public class Attendance {
@@ -33,6 +34,10 @@ public class Attendance {
     Student student;
 
     @ManyToOne
+    @JoinColumn(name = "schedule_id", nullable = false)
+    Schedule schedule;
+
+    @ManyToOne
     @JoinColumn(name = "class_id", nullable = false)
     Class aClass;
 
@@ -40,6 +45,7 @@ public class Attendance {
     @Column(name = "created_at")
     LocalDateTime createdAt;
 
+    @UpdateTimestamp
     @Column(name = "updated_at")
     LocalDateTime updatedAt;
 

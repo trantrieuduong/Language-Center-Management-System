@@ -1,5 +1,5 @@
-CREATE DATABASE IF NOT EXISTS `languagecentermanagementsystem`;
-USE `languagecentermanagementsystem`;
+CREATE DATABASE IF NOT EXISTS languagecentermanagementsystem;
+USE languagecentermanagementsystem;
 
 -- ================================================
 -- USER MODULE - Bảng người dùng và tài khoản
@@ -112,7 +112,7 @@ CREATE TABLE IF NOT EXISTS class (
     INDEX idx_start_date (start_date)
 );
 
--- Bảng Enrollment (Đăng ký khóa học)
+-- Bảng Enrollment (Đăng ký lớp học)
 CREATE TABLE IF NOT EXISTS enrollment (
     enrollment_id BIGINT PRIMARY KEY AUTO_INCREMENT,
     student_id BIGINT NOT NULL,
@@ -147,28 +147,27 @@ CREATE TABLE IF NOT EXISTS schedule (
     schedule_id BIGINT PRIMARY KEY AUTO_INCREMENT,
     class_id BIGINT NOT NULL,
     room_id BIGINT NOT NULL,
-    date DATE,
+    schedule_date DATE NOT NULL,
     start_time TIME,
     end_time TIME,
     FOREIGN KEY (class_id) REFERENCES class(class_id),
     FOREIGN KEY (room_id) REFERENCES room(room_id),
-    UNIQUE KEY unq_schedule (class_id, room_id, date, start_time, end_time)
+    UNIQUE KEY unq_schedule (class_id, room_id, schedule_date, start_time, end_time),
     INDEX idx_class (class_id),
-    INDEX idx_date (date)
+    INDEX idx_date (schedule_date)
 );
 
 -- Bảng Attendance (Điểm danh)
 CREATE TABLE IF NOT EXISTS attendance (
     attendance_id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    student_id BIGINT NOT NULL,
     class_id BIGINT NOT NULL,
+    student_id BIGINT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME ON UPDATE CURRENT_TIMESTAMP,
     status ENUM('PRESENT', 'EXCUSED', 'ABSENT', 'LATE'),
     FOREIGN KEY (student_id) REFERENCES student(student_id),
     FOREIGN KEY (class_id) REFERENCES class(class_id),
-    UNIQUE KEY unq_schedule (class_id, room_id, date, start_time, end_time),
-    UNIQUE KEY unq_student_class_in_attendance (student_id, class_id),
+    UNIQUE KEY unq_attendance (class_id, student_id),
     INDEX idx_student (student_id),
     INDEX idx_class (class_id),
     INDEX idx_status (status)
@@ -202,11 +201,9 @@ CREATE TABLE IF NOT EXISTS invoice (
     INDEX idx_status (status)
 );
 
--- ADD FOREIGN KEY CONSTRAINT FOR PAYMENT TO INVOICE
 ALTER TABLE payment ADD CONSTRAINT fk_payment_invoice 
     FOREIGN KEY (invoice_id) REFERENCES invoice(invoice_id);
 
--- Indexes already created above, but additional useful indexes:
 CREATE INDEX idx_class_date ON enrollment(enrolled_at);
-CREATE INDEX idx_attendance_date ON attendance(created_at);
-CREATE INDEX idx_schedule_class_date ON schedule(class_id, date);
+CREATE INDEX idx_attendance_date ON attendance(date);
+CREATE INDEX idx_schedule_class_date ON schedule(class_id, schedule_date);

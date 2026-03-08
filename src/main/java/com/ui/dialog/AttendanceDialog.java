@@ -12,23 +12,19 @@ import javax.swing.*;
 import java.awt.*;
 
 public class AttendanceDialog extends JDialog {
-    private Attendance existing;
     @Getter
     private boolean isSuccess;
     private final AttendanceServiceImpl service = new AttendanceServiceImpl();
 
+    private final Attendance existing;
+
     // Information Fields
-    private final JTextField tfStudentID = new JTextField(30);
-    private final JTextField tfClassID = new JTextField(30);
     private final JComboBox<AttendanceStatus> cbStatus = new JComboBox<>(AttendanceStatus.values());
 
-
     public AttendanceDialog(Frame parent, Attendance existing) {
-        super(parent, existing == null ? "Thêm điểm  danh" : "Sửa điểm  danh", true);
-        this.existing = existing;
+        super(parent, "Sửa điểm  danh", true);
 
-        if (existing != null)
-            prefill(existing);
+        prefill(existing);
 
         setLayout(new BorderLayout(10, 10));
         add(buildForm(), BorderLayout.CENTER);
@@ -37,6 +33,8 @@ public class AttendanceDialog extends JDialog {
         pack();
         setResizable(false);
         setLocationRelativeTo(parent);
+
+        this.existing = existing;
     }
 
     private JPanel buildForm() {
@@ -48,9 +46,7 @@ public class AttendanceDialog extends JDialog {
 
         // --- Course info rows ---
         Object[][] infoRows = {
-                { "Mã học viên *", tfStudentID },
-                { "Mã lớp học *", tfClassID },
-                { "Trạng thái", cbStatus },
+                {"Trạng thái *", cbStatus},
         };
 
         int row = 0;
@@ -69,7 +65,7 @@ public class AttendanceDialog extends JDialog {
 
     private JPanel buildButtons() {
         JPanel p = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
-        JButton btnOk = UiUtil.primaryButton(existing != null ? "Cập nhật" : "Lưu");
+        JButton btnOk = UiUtil.primaryButton("Cập nhật");
         JButton btnCancel = new JButton("Hủy");
         btnOk.addActionListener(e -> onOk());
         btnCancel.addActionListener(e -> dispose());
@@ -79,53 +75,23 @@ public class AttendanceDialog extends JDialog {
     }
 
     private void onOk() {
-        String studentIDStr = tfStudentID.getText().trim();
-        if (studentIDStr.isEmpty()) {
-            warn("Mã sinh viên không được để trống!");
-            return;
-        }
-
-        String classIDStr = tfClassID.getText().trim();
-        if (classIDStr.isEmpty()) {
-            warn("Mã lớp học không được để trống!");
-            return;
-        }
-
         AttendanceDTO dto = new AttendanceDTO();
-        try {
-            dto.setStudentID(Long.parseLong(studentIDStr));
-        } catch (Exception e) {
-            warn("Mã học viên không hợp lệ!");
-            return;
-        }
-
-        try {
-            dto.setClassID(Long.parseLong(classIDStr));
-        } catch (Exception e) {
-            warn("Mã lớp học không hợp lệ!");
-            return;
-        }
+        //dto.setClassID(existing.getAClass().getClassID());
 
         dto.setStatus((AttendanceStatus) cbStatus.getSelectedItem());
 
         new SwingWorker<Attendance, Void>() {
             @Override
             protected Attendance doInBackground() throws Exception {
-                if(existing != null) {
-                    dto.setAttendanceID(existing.getAttendanceID());
-                    return service.update(dto);
-                }
-                return service.save(dto);
+                dto.setAttendanceID(existing.getAttendanceID());
+                return service.update(dto);
             }
 
             @Override
             protected void done() {
                 try {
                     get(); // kiểm tra doInBackground có lỗi không
-                    if(existing != null)
-                        MessageBox.info(AttendanceDialog.this, "Cập nhật điểm danh thành công.");
-                    else
-                        MessageBox.info(AttendanceDialog.this, "Thêm điểm danh thành công.");
+                    MessageBox.info(AttendanceDialog.this, "Cập nhật điểm danh thành công.");
 
                     isSuccess = true; // Đặt flag để bên panel biết mà reload data
                     dispose();
@@ -143,12 +109,7 @@ public class AttendanceDialog extends JDialog {
     }
 
     private void prefill(Attendance a) {
-        if (a.getStudent() != null)
-            tfStudentID.setText(String.valueOf(a.getStudent().getStudentID()));
-        if (a.getAClass() != null)
-            tfClassID.setText(String.valueOf(a.getAClass().getClassID()));
-        if (a.getStatus() != null)
-            cbStatus.setSelectedItem(a.getStatus());
+        cbStatus.setSelectedItem(a.getStatus());
     }
 }
 
