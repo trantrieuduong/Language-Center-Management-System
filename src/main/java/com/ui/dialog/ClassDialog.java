@@ -3,7 +3,9 @@ package com.ui.dialog;
 import com.dto.ClassDTO;
 import com.model.academic.Class;
 import com.model.academic.ClassStatus;
+import com.model.academic.Course;
 import com.service.impl.ClassServiceImpl;
+import com.service.impl.CourseServiceImpl;
 import com.ui.util.JTextFieldPlaceholder;
 import com.ui.util.MessageBox;
 import com.ui.util.UiUtil;
@@ -14,12 +16,14 @@ import java.awt.*;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.List;
 
 public class ClassDialog extends JDialog {
     private final Class existing;
     @Getter
     private boolean isSuccess;
     private final ClassServiceImpl service = new ClassServiceImpl();
+    private final CourseServiceImpl courseService = new CourseServiceImpl();
 
     // Information Fields
     private final JTextField tfName = new JTextField(25);
@@ -27,7 +31,7 @@ public class ClassDialog extends JDialog {
     private final JTextFieldPlaceholder tfStartDate = new JTextFieldPlaceholder("dd/MM/yyyy");
     private final JTextFieldPlaceholder tfEndDate = new JTextFieldPlaceholder("dd/MM/yyyy");
     private final JComboBox<ClassStatus> cbStatus = new JComboBox<>(ClassStatus.values());
-    private final JTextField tfCourseID = new JTextField(30);
+    private final JComboBox<Course> cbCourse = new JComboBox<>();
     private final JTextField tfRoomID = new JTextField(30);
     private final JTextField tfTeacherID = new JTextField(30);
 
@@ -36,6 +40,8 @@ public class ClassDialog extends JDialog {
     public ClassDialog(Frame parent, Class existing) {
         super(parent, existing == null ? "Thêm lớp học" : "Sửa lớp học", true);
         this.existing = existing;
+
+        loadCourseData();
 
         if (existing != null)
             prefill(existing);
@@ -49,6 +55,13 @@ public class ClassDialog extends JDialog {
         setLocationRelativeTo(parent);
     }
 
+    private void loadCourseData() {
+        List<Course> courses = courseService.findAll();
+        for (Course course : courses) {
+            cbCourse.addItem(course);
+        }
+    }
+
     private JPanel buildForm() {
         JPanel p = new JPanel(new GridBagLayout());
         p.setBorder(BorderFactory.createEmptyBorder(15, 20, 5, 20));
@@ -60,8 +73,8 @@ public class ClassDialog extends JDialog {
         Object[][] infoRows = {
                 { "Tên lớp học *", tfName },
                 { "Học viên tối đa *", tfMaxStudent },
-                { "Trạng thái", cbStatus },
-                { "Mã khóa học *", tfCourseID },
+                { "Trạng thái *", cbStatus },
+                { "Khóa học *", cbCourse },
                 { "Mã giáo viên *", tfTeacherID },
                 { "Mã phòng học *", tfRoomID },
                 { "Ngày bắt đầu *", tfStartDate },
@@ -111,12 +124,7 @@ public class ClassDialog extends JDialog {
 
         dto.setStatus((ClassStatus) cbStatus.getSelectedItem());
 
-        try {
-            dto.setCourseID(Long.parseLong(tfCourseID.getText().trim()));
-        } catch (Exception e) {
-            warn("Mã khóa học không hợp lệ!");
-            return;
-        }
+        dto.setCourseID(((Course) cbCourse.getSelectedItem()).getCourseID());
 
         try {
             dto.setRoomID(Long.parseLong(tfRoomID.getText().trim()));
@@ -142,10 +150,20 @@ public class ClassDialog extends JDialog {
             return;
         }
 
+        if(startDate.isBefore(LocalDate.now())){
+            warn("Ngày bắt đầu phải sau thời điểm hiện tại!");
+            return;
+        }
+
         try {
             endDate = LocalDate.parse(tfEndDate.getText().trim(), formatter);
         } catch (DateTimeParseException e) {
             warn("Ngày kết thúc không hợp lệ! (Vui lòng nhập theo định dạng (dd/MM/yyyy) và phải là ngày, tháng, năm hợp lệ!)");
+            return;
+        }
+
+        if(endDate.isBefore(LocalDate.now())){
+            warn("Ngày kết thúc phải sau thời điểm hiện tại!");
             return;
         }
 
@@ -196,7 +214,7 @@ public class ClassDialog extends JDialog {
         if (c.getMaxStudent() != null)
             tfMaxStudent.setText(String.valueOf(c.getMaxStudent()));
         if (c.getCourse() != null)
-            tfCourseID.setText(String.valueOf(c.getCourse().getCourseID()));
+            cbCourse.setSelectedItem(c.getCourse());
         if (c.getTeacher() != null)
             tfTeacherID.setText(String.valueOf(c.getTeacher().getTeacherID()));
         if (c.getRoom() != null)

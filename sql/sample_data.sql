@@ -39,25 +39,25 @@ VALUES ('Trương Thị Linh', 'ACCOUNTANT', '0811111111', 'linhtruong@email.com
        ('Lưu Văn Hạo', 'CONSULTANT', '0800000000', 'luuhao@email.com', 'ACTIVE');
 
 INSERT INTO user_account (user_id, username, password_hash, role, student_id, teacher_id, staff_id)
-VALUES ('550e8400-e29b-41d4-a716-446655440001', 'student001',
+VALUES (UUID_TO_BIN('550e8400-e29b-41d4-a716-446655440001'), 'student001',
         '$2a$12$MJQ/McVoRniCmlGuaiItgO82x2j0ELVaFjEH5Fprg3hJiF7kk3aE2', 'STUDENT', 1, NULL, NULL),
-       ('550e8400-e29b-41d4-a716-446655440002', 'student002',
+       (UUID_TO_BIN('550e8400-e29b-41d4-a716-446655440002'), 'student002',
         '$2a$12$MJQ/McVoRniCmlGuaiItgO82x2j0ELVaFjEH5Fprg3hJiF7kk3aE2', 'STUDENT', 2, NULL, NULL),
-       ('550e8400-e29b-41d4-a716-446655440003', 'student003',
+       (UUID_TO_BIN('550e8400-e29b-41d4-a716-446655440003'), 'student003',
         '$2a$12$MJQ/McVoRniCmlGuaiItgO82x2j0ELVaFjEH5Fprg3hJiF7kk3aE2', 'STUDENT', 3, NULL, NULL),
-       ('550e8400-e29b-41d4-a716-446655440004', 'teacher001',
+       (UUID_TO_BIN('550e8400-e29b-41d4-a716-446655440004'), 'teacher001',
         '$2a$12$MJQ/McVoRniCmlGuaiItgO82x2j0ELVaFjEH5Fprg3hJiF7kk3aE2', 'TEACHER', NULL, 1, NULL),
-       ('550e8400-e29b-41d4-a716-446655440005', 'teacher002',
+       (UUID_TO_BIN('550e8400-e29b-41d4-a716-446655440005'), 'teacher002',
         '$2a$12$MJQ/McVoRniCmlGuaiItgO82x2j0ELVaFjEH5Fprg3hJiF7kk3aE2', 'TEACHER', NULL, 2, NULL),
-       ('550e8400-e29b-41d4-a716-446655440006', 'teacher003',
+       (UUID_TO_BIN('550e8400-e29b-41d4-a716-446655440006'), 'teacher003',
         '$2a$12$MJQ/McVoRniCmlGuaiItgO82x2j0ELVaFjEH5Fprg3hJiF7kk3aE2', 'TEACHER', NULL, 3, NULL),
-       ('550e8400-e29b-41d4-a716-446655440007', 'staff001',
+       (UUID_TO_BIN('550e8400-e29b-41d4-a716-446655440007'), 'staff001',
         '$2a$12$MJQ/McVoRniCmlGuaiItgO82x2j0ELVaFjEH5Fprg3hJiF7kk3aE2', 'STAFF', NULL, NULL, 1),
-       ('550e8400-e29b-41d4-a716-446655440008', 'staff002',
+       (UUID_TO_BIN('550e8400-e29b-41d4-a716-446655440008'), 'staff002',
         '$2a$12$MJQ/McVoRniCmlGuaiItgO82x2j0ELVaFjEH5Fprg3hJiF7kk3aE2', 'STAFF', NULL, NULL, 2),
-       ('550e8400-e29b-41d4-a716-446655440009', 'admin001',
+       (UUID_TO_BIN('550e8400-e29b-41d4-a716-446655440009'), 'admin001',
         '$2a$12$MJQ/McVoRniCmlGuaiItgO82x2j0ELVaFjEH5Fprg3hJiF7kk3aE2', 'ADMIN', NULL, NULL, NULL),
-       ('550e8400-e29b-41d4-a716-446655440010', 'staff003',
+       (UUID_TO_BIN('550e8400-e29b-41d4-a716-446655440010'), 'staff003',
         '$2a$12$MJQ/McVoRniCmlGuaiItgO82x2j0ELVaFjEH5Fprg3hJiF7kk3aE2', 'STAFF', NULL, NULL, 3);
 
 INSERT INTO course (course_name, description, level, duration, fee, status)

@@ -16,7 +16,11 @@ public class ClassRepository extends BaseRepository<Class, Long> {
     public List<Class> findAll() {
         try (EntityManager em = em()) {
             return em.createQuery(
-                    "SELECT c FROM Class c LEFT JOIN FETCH c.course LEFT JOIN FETCH c.teacher ORDER BY c.className",
+                    "SELECT c FROM Class c " +
+                            "LEFT JOIN FETCH c.course " +
+                            "LEFT JOIN FETCH c.teacher " +
+                            "LEFT JOIN FETCH c.room " +
+                            "ORDER BY c.className",
                     Class.class).getResultList();
         } catch (Exception e) {
             throw new SystemException("Lỗi truy vấn lớp học: " + e.getMessage(), e);
