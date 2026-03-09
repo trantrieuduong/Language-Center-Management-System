@@ -39,7 +39,7 @@ public class Attendance {
 
     @ManyToOne
     @JoinColumn(name = "class_id", nullable = false)
-    Class aClass;
+    Class aClass;//
 
     @CreationTimestamp
     @Column(name = "created_at")

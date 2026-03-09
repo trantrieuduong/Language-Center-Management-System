@@ -1,10 +1,13 @@
 package com.repository;
 
+import com.exception.DataInUseException;
 import com.exception.SystemException;
 import com.db.JpaUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
+import org.hibernate.exception.ConstraintViolationException;
 
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.List;
 import java.util.Optional;
 
@@ -85,7 +88,21 @@ public abstract class BaseRepository<T, ID> {
         } catch (Exception e) {
             if (tx.isActive())
                 tx.rollback();
+
+            Throwable cause = e;
+            while (cause != null) {
+                if (cause instanceof ConstraintViolationException ||
+                        cause instanceof SQLIntegrityConstraintViolationException) {
+
+                    throw new DataInUseException(
+                            "Không thể xóa: Dữ liệu đang được sử dụng ở bảng khác (vi phạm khóa ngoại)!"
+                    );
+                }
+                cause = cause.getCause();
+            }
+
             throw new SystemException("Lỗi khi xóa dữ liệu: " + e.getMessage(), e);
+
         } finally {
             em.close();
         }

@@ -52,7 +52,7 @@ public class CourseDialog extends JDialog {
         // --- Course info rows ---
         Object[][] infoRows = {
                 { "Tên khóa học *", tfName },
-                { "Số tiết trong tuần", tfDuration },
+                { "Số tiết trong tuần *", tfDuration },
                 { "Cấp độ", cbLevel },
                 { "Học phí", tfFee },
                 { "Trạng thái", cbStatus },

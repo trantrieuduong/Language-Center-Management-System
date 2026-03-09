@@ -1,6 +1,7 @@
 package com.ui.panel;
 
 import com.exception.AppException;
+import com.exception.DataInUseException;
 import com.model.operation.Room;
 import com.security.CurrentUser;
 import com.security.SecurityContext;
@@ -9,6 +10,7 @@ import com.ui.dialog.RoomDialog;
 import com.ui.table.RoomTableModel;
 import com.ui.util.MessageBox;
 import com.ui.util.UiUtil;
+import org.hibernate.exception.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

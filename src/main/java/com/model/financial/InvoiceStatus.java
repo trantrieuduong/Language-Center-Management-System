@@ -1,8 +1,8 @@
 package com.model.financial;
 
 public enum InvoiceStatus {
-    DRAFT,
-    ISSUED,
+    DRAFT,//Hóa đơn mới chỉ được khởi tạo, đang trong quá trình soạn thảo
+    ISSUED,//Hóa đơn đã được chốt và gửi đến sinh viên/phụ huynh
     PAID,
-    CANCELED
+    CANCELED // hủy bỏ do sai sót
 }

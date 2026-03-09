@@ -30,7 +30,7 @@ public class Payment {
 
     @Column(name = "amount")
     @Builder.Default
-    BigDecimal amount = BigDecimal.ZERO;
+    BigDecimal amount = BigDecimal.ZERO;//Số tiền thực thu
 
     @CreationTimestamp
     @Column(name = "payment_date")

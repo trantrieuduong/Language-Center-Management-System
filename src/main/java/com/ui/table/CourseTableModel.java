@@ -9,7 +9,7 @@ import java.util.List;
 
 public class CourseTableModel extends AbstractTableModel {
     private static final String[] COLUMNS = {
-            "ID", "Tên", "Số Tiết / Tuần *", "Học phí", "Cấp độ", "Trạng thái", "Mô tả"
+            "ID", "Tên", "Số Tiết / Tuần", "Học phí", "Cấp độ", "Trạng thái", "Mô tả"
     };
 
     private List<Course> data = new ArrayList<>();
