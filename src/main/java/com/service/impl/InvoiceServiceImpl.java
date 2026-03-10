@@ -1,40 +1,74 @@
 package com.service.impl;
 
-import com.exception.ValidationException;
+import com.exception.BusinessException;
+import com.model.academic.EnrollmentStatus;
 import com.model.financial.Invoice;
+import com.model.financial.InvoiceStatus;
 import com.model.user.UserRole;
+import com.repository.EnrollmentRepository;
 import com.repository.InvoiceRepository;
+import com.security.CurrentUser;
 import com.security.PermissionChecker;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 public class InvoiceServiceImpl {
-    private final InvoiceRepository invoiceRepo = new InvoiceRepository();
 
+    private final InvoiceRepository invoiceRepo = new InvoiceRepository();
+    private final EnrollmentRepository enrollmentRepo = new EnrollmentRepository();
+
+    /** Xem danh sách: ADMIN/ACCOUNTANT thấy tất cả, STUDENT chỉ thấy của mình */
     public List<Invoice> findAll() {
-        var u = PermissionChecker.requireAuthenticated();
+        CurrentUser u = PermissionChecker.requireAuthenticated();
         if (u.role() == UserRole.STUDENT) {
             Long sid = u.relatedId();
             return sid == null ? List.of() : invoiceRepo.findByStudent(sid);
         }
-        return invoiceRepo.findAll();
+        if (u.isAdmin() || u.isAccountant()) {
+            return invoiceRepo.findAll();
+        }
+        throw new BusinessException("Bạn không có quyền xem danh sách hóa đơn.");
     }
 
-    public Invoice save(Invoice invoice) {
+    /**
+     * Cập nhật trạng thái hóa đơn: chỉ ADMIN hoặc ACCOUNTANT.
+     * Khi chuyển sang PAID → tự động set enrollment tương ứng sang ACCEPT.
+     */
+    public Invoice updateStatus(Long invoiceId, InvoiceStatus newStatus) {
         PermissionChecker.requireAdminOrStaff(com.model.user.StaffRole.ACCOUNTANT);
-        if (invoice.getTotalAmount() == null || invoice.getTotalAmount().compareTo(BigDecimal.ZERO) <= 0)
-            throw new ValidationException("Tổng tiền hóa đơn phải lớn hơn 0.");
-        return invoiceRepo.save(invoice);
+
+        Invoice invoice = invoiceRepo.findById(invoiceId)
+                .orElseThrow(() -> new BusinessException("Không tìm thấy hóa đơn với ID: " + invoiceId));
+
+        if (invoice.getStatus() == InvoiceStatus.CANCELED)
+            throw new BusinessException("Hóa đơn đã bị hủy, không thể cập nhật.");
+        if (invoice.getStatus() == InvoiceStatus.PAID && newStatus != InvoiceStatus.CANCELED)
+            throw new BusinessException("Hóa đơn đã thanh toán, chỉ có thể chuyển sang CANCELED.");
+
+        invoice.setStatus(newStatus);
+        Invoice updated = invoiceRepo.update(invoice);
+
+        // Khi thanh toán thành công → chuyển enrollment sang ACCEPT
+        if (newStatus == InvoiceStatus.PAID) {
+            acceptEnrollment(invoice);
+        }
+
+        return updated;
     }
 
-    public Invoice update(Invoice invoice) {
-        PermissionChecker.requireAdminOrStaff(com.model.user.StaffRole.ACCOUNTANT);
-        return invoiceRepo.update(invoice);
-    }
+    /**
+     * Tìm enrollment của student với class tương ứng và set ACCEPT.
+     */
+    private void acceptEnrollment(Invoice invoice) {
+        if (invoice.getStudent() == null || invoice.getAclass() == null)
+            return;
 
-    public void delete(Long id) {
-        PermissionChecker.requireAdmin();
-        invoiceRepo.delete(id);
+        Long studentId = invoice.getStudent().getStudentID();
+        Long classId = invoice.getAclass().getClassID();
+
+        enrollmentRepo.findByStudentAndClass(studentId, classId).ifPresent(e -> {
+            e.setStatus(EnrollmentStatus.ACCEPT);
+            enrollmentRepo.update(e);
+        });
     }
 }

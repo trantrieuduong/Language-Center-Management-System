@@ -23,7 +23,6 @@ public class MainFrame extends JFrame {
     public static final String CARD_ATTENDANCE = "Attendance";
     public static final String CARD_RESULTS = "Results";
     public static final String CARD_INVOICES = "Invoices";
-    public static final String CARD_PAYMENTS = "Payments";
     public static final String CARD_STAFF = "Staff";
     public static final String CARD_USERACCOUNT = "UserAccounts";
 
@@ -63,9 +62,8 @@ public class MainFrame extends JFrame {
     private void buildContent(CurrentUser user) {
         contentPanel.setBackground(UiUtil.COLOR_BG);
 
-        // Panels visible to all authenticated roles
-        contentPanel.add(new DashboardPanel(), CARD_DASHBOARD);
-
+        if (user.isAdmin())
+            contentPanel.add(new DashboardPanel(), CARD_DASHBOARD);
         if (canSeeStudents(user))
             contentPanel.add(new StudentsPanel(), CARD_STUDENTS);
         if (user.isAdmin() || user.isConsultant())
@@ -86,8 +84,6 @@ public class MainFrame extends JFrame {
             contentPanel.add(new ResultsPanel(), CARD_RESULTS);
         if (user.isAdmin() || user.isAccountant() || user.isStudent())
             contentPanel.add(new InvoicesPanel(), CARD_INVOICES);
-        if (user.isAdmin() || user.isAccountant() || user.isStudent())
-            contentPanel.add(new PaymentsPanel(), CARD_PAYMENTS);
         if (user.isAdmin())
             contentPanel.add(new StaffPanel(), CARD_STAFF);
         if (user.isAdmin())
@@ -107,7 +103,7 @@ public class MainFrame extends JFrame {
         nav.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
 
         // --- Menu items: {label, cardName, visible for roles} ---
-        addNavItem(nav, "Tổng quan", CARD_DASHBOARD, true); // all
+        addNavItem(nav, "Tổng quan", CARD_DASHBOARD, user.isAdmin());
         addNavItem(nav, "Học viên", CARD_STUDENTS, canSeeStudents(user));
         addNavItem(nav, "Giáo viên", CARD_TEACHERS, user.isAdmin() || user.isConsultant());
         addNavItem(nav, "Khóa học", CARD_COURSES, user.isAdmin() || user.isConsultant() || user.isTeacher());
@@ -122,7 +118,6 @@ public class MainFrame extends JFrame {
         addNavItem(nav, "Kết quả học tập", CARD_RESULTS,
                 user.isAdmin() || user.isConsultant() || user.isTeacher() || user.isStudent());
         addNavItem(nav, "Hóa đơn", CARD_INVOICES, user.isAdmin() || user.isAccountant() || user.isStudent());
-        addNavItem(nav, "Thanh toán", CARD_PAYMENTS, user.isAdmin() || user.isAccountant() || user.isStudent());
         addNavItem(nav, "Nhân viên", CARD_STAFF, user.isAdmin());
         addNavItem(nav, "Tài khoản", CARD_USERACCOUNT, user.isAdmin());
 

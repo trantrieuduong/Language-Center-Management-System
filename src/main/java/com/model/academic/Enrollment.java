@@ -31,6 +31,11 @@ public class Enrollment {
     @JoinColumn(name = "class_id", nullable = false)
     Class aclass;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status")
+    @Builder.Default
+    EnrollmentStatus status = EnrollmentStatus.PENDING;
+
     @CreationTimestamp
     @Column(name = "enrolled_at")
     LocalDateTime enrolledAt;

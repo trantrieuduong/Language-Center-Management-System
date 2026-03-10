@@ -1,6 +1,5 @@
 package com.model.financial;
 
-import com.model.user.Student;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -8,7 +7,6 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Getter
 @Setter
@@ -24,13 +22,14 @@ public class Payment {
     @Column(name = "payment_id")
     Long paymentID;
 
-    @OneToOne
+    // 1 payment cho 1 invoice
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "invoice_id", nullable = false)
     Invoice invoice;
 
     @Column(name = "amount")
     @Builder.Default
-    BigDecimal amount = BigDecimal.ZERO;//Số tiền thực thu
+    BigDecimal amount = BigDecimal.ZERO;
 
     @CreationTimestamp
     @Column(name = "payment_date")
@@ -42,5 +41,6 @@ public class Payment {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    PaymentStatus status;
+    @Builder.Default
+    PaymentStatus status = PaymentStatus.PENDING;
 }

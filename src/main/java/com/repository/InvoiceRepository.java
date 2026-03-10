@@ -16,7 +16,11 @@ public class InvoiceRepository extends BaseRepository<Invoice, Long> {
     public List<Invoice> findAll() {
         try (EntityManager em = em()) {
             return em.createQuery(
-                    "SELECT i FROM Invoice i LEFT JOIN FETCH i.student ORDER BY i.issuedAt DESC",
+                    "SELECT i FROM Invoice i " +
+                            "LEFT JOIN FETCH i.student " +
+                            "LEFT JOIN FETCH i.aclass c " +
+                            "LEFT JOIN FETCH c.course " +
+                            "ORDER BY i.issuedAt DESC",
                     Invoice.class).getResultList();
         } catch (Exception e) {
             throw new SystemException("Lỗi truy vấn hóa đơn: " + e.getMessage(), e);
@@ -26,8 +30,12 @@ public class InvoiceRepository extends BaseRepository<Invoice, Long> {
     public List<Invoice> findByStudent(Long studentId) {
         try (EntityManager em = em()) {
             return em.createQuery(
-                            "SELECT i FROM Invoice i WHERE i.student.studentID = :sid ORDER BY i.issuedAt DESC",
-                            Invoice.class)
+                    "SELECT i FROM Invoice i " +
+                            "LEFT JOIN FETCH i.student " +
+                            "LEFT JOIN FETCH i.aclass c " +
+                            "LEFT JOIN FETCH c.course " +
+                            "WHERE i.student.studentID = :sid ORDER BY i.issuedAt DESC",
+                    Invoice.class)
                     .setParameter("sid", studentId)
                     .getResultList();
         } catch (Exception e) {

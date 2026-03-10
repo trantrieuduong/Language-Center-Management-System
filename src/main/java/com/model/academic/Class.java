@@ -26,11 +26,11 @@ public class Class {
     @Column(name = "class_name")
     String className;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "course_id", nullable = false)
     Course course;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "teacher_id", nullable = false)
     Teacher teacher;
 
@@ -44,7 +44,7 @@ public class Class {
     @Builder.Default
     Integer maxStudent = 0;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "room_id", nullable = false)
     Room room;
 

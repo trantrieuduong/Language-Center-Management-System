@@ -1,5 +1,6 @@
 package com.model.financial;
 
+import com.model.academic.Class;
 import com.model.user.Student;
 import jakarta.persistence.*;
 import lombok.*;
@@ -23,13 +24,14 @@ public class Invoice {
     @Column(name = "invoice_id")
     Long invoiceID;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "student_id", nullable = false)
     Student student;
 
-    @OneToOne
-    @JoinColumn(name = "payment_id", nullable = false)
-    Payment payment;
+    // Liên kết lớp học đăng ký
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "class_id")
+    Class aclass;
 
     @Column(name = "total_amount")
     BigDecimal totalAmount;
@@ -40,5 +42,6 @@ public class Invoice {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    InvoiceStatus status;
+    @Builder.Default
+    InvoiceStatus status = InvoiceStatus.PENDING;
 }

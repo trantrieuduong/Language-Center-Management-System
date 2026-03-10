@@ -1,11 +1,11 @@
 package com.repository;
 
 import com.exception.SystemException;
-import com.model.academic.Class;
 import com.model.academic.Enrollment;
 import jakarta.persistence.EntityManager;
 
 import java.util.List;
+import java.util.Optional;
 
 public class EnrollmentRepository extends BaseRepository<Enrollment, Long> {
 
@@ -27,8 +27,8 @@ public class EnrollmentRepository extends BaseRepository<Enrollment, Long> {
     public List<Enrollment> findByStudent(Long studentId) {
         try (EntityManager em = em()) {
             return em.createQuery(
-                            "SELECT e FROM Enrollment e WHERE e.student.studentID = :sid ORDER BY e.enrolledAt DESC",
-                            Enrollment.class)
+                    "SELECT e FROM Enrollment e WHERE e.student.studentID = :sid ORDER BY e.enrolledAt DESC",
+                    Enrollment.class)
                     .setParameter("sid", studentId)
                     .getResultList();
         } catch (Exception e) {
@@ -39,8 +39,8 @@ public class EnrollmentRepository extends BaseRepository<Enrollment, Long> {
     public List<Enrollment> findByClass(Long classId) {
         try (EntityManager em = em()) {
             return em.createQuery(
-                            "SELECT e FROM Enrollment e WHERE e.aclass.classID = :cid",
-                            Enrollment.class)
+                    "SELECT e FROM Enrollment e WHERE e.aclass.classID = :cid",
+                    Enrollment.class)
                     .setParameter("cid", classId)
                     .getResultList();
         } catch (Exception e) {
@@ -51,12 +51,27 @@ public class EnrollmentRepository extends BaseRepository<Enrollment, Long> {
     public long countByClass(Long classId) {
         try (EntityManager em = em()) {
             Long c = em.createQuery(
-                            "SELECT COUNT(e) FROM Enrollment e WHERE e.aclass.classID = :cid", Long.class)
+                    "SELECT COUNT(e) FROM Enrollment e WHERE e.aclass.classID = :cid", Long.class)
                     .setParameter("cid", classId)
                     .getSingleResult();
             return c == null ? 0 : c;
         } catch (Exception e) {
             throw new SystemException("Lỗi đếm số đăng ký: " + e.getMessage(), e);
+        }
+    }
+
+    /** Tìm enrollment của 1 student trong 1 class cụ thể */
+    public Optional<Enrollment> findByStudentAndClass(Long studentId, Long classId) {
+        try (EntityManager em = em()) {
+            return em.createQuery(
+                    "SELECT e FROM Enrollment e WHERE e.student.studentID = :sid AND e.aclass.classID = :cid",
+                    Enrollment.class)
+                    .setParameter("sid", studentId)
+                    .setParameter("cid", classId)
+                    .getResultStream()
+                    .findFirst();
+        } catch (Exception e) {
+            throw new SystemException("Lỗi truy vấn đăng ký: " + e.getMessage(), e);
         }
     }
 }
