@@ -70,15 +70,14 @@ public class EnrollmentServiceImpl {
         if (aClass.getStatus() != ClassStatus.ACTIVE)
             throw new InvalidStatusException("Lớp học bị khóa! Nhập lớp học khác!");
 
-        if (user.isStudent()) {
+        if (user.isAdmin() || user.isConsultant()) {
             long current = enrollmentRepo.countByClass(dto.getClassID());
             if (aClass.getMaxStudent() > 0 && current >= aClass.getMaxStudent()) {
                 throw new BusinessException(
                         "Lớp học đã đủ số học viên tối đa (" + aClass.getMaxStudent() + " người).");
             }
-        } else if (!user.isAdmin() && !user.isConsultant()) {
+        } else
             throw new BusinessException("Bạn không có quyền đăng ký lớp học!");
-        }
 
         Enrollment enrollment = Enrollment.builder()
                 .aclass(aClass)

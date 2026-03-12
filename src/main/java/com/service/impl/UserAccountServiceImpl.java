@@ -1,11 +1,14 @@
 package com.service.impl;
 
 import at.favre.lib.crypto.bcrypt.BCrypt;
+import com.exception.BusinessException;
 import com.model.user.*;
 import com.repository.UserAccountRepository;
 import com.security.PermissionChecker;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 public class UserAccountServiceImpl {
     private final UserAccountRepository repo = new UserAccountRepository();
@@ -13,6 +16,14 @@ public class UserAccountServiceImpl {
     public List<UserAccount> findAll() {
         PermissionChecker.requireAdmin();
         return repo.findAll();
+    }
+
+    public UserAccount findById(UUID id){
+        PermissionChecker.requireAdminOrAnyStaff();
+        Optional<UserAccount> user = repo.findById(id);
+        if (user.isPresent())
+            return user.get();
+        throw new BusinessException("Không tìm thấy user");
     }
 
     public UserAccount update(UserAccount account) {

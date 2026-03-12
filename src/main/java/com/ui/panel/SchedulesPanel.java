@@ -1,6 +1,7 @@
 package com.ui.panel;
 
 import com.exception.AppException;
+import com.model.academic.EnrollmentStatus;
 import com.model.operation.Schedule;
 import com.security.CurrentUser;
 import com.security.SecurityContext;
@@ -64,41 +65,6 @@ public class SchedulesPanel extends JPanel {
         return panel;
     }
 
-//    private JPanel buildTimetableNav() {
-//        // Panel tổng chứa 2 cụm: Điều hướng (Trái/Giữa) và Lọc (Phải)
-//        JPanel mainNav = new JPanel(new BorderLayout(10, 0));
-//        mainNav.setOpaque(false);
-//
-//        // --- Cụm 1: Điều hướng tuần (FlowLayout bên Trái) ---
-//        JPanel pnlWeekNav = new JPanel(new FlowLayout(FlowLayout.LEFT, 15, 10));
-//        pnlWeekNav.setOpaque(false);
-//
-//        dcFilter.setDateFormatString("dd/MM/yyyy");
-//        dcFilter.setPreferredSize(new Dimension(120, 25));
-//
-//        pnlWeekNav.add(btnPrev);
-//        pnlWeekNav.add(btnToday);
-//        pnlWeekNav.add(dcFilter);
-//        pnlWeekNav.add(btnNext);
-//
-//        // --- Cụm 2: Lọc theo lớp (FlowLayout bên Phải) ---
-//        JPanel pnlClassFilter = new JPanel(new FlowLayout(FlowLayout.RIGHT, 15, 10));
-//        pnlClassFilter.setOpaque(false);
-//        pnlClassFilter.add(new JLabel("Lọc lớp:"));
-//        tfClassSearch.setPreferredSize(new Dimension(150, 25));
-//        pnlClassFilter.add(tfClassSearch);
-//
-//        JButton btnFilter = UiUtil.primaryButton("Lọc");
-//        btnFilter.addActionListener(e -> loadData(tfClassSearch.getText().trim()));
-//        pnlClassFilter.add(btnFilter);
-//
-//        // Đưa 2 cụm vào mainNav
-//        mainNav.add(pnlWeekNav, BorderLayout.WEST);
-//        mainNav.add(pnlClassFilter, BorderLayout.EAST);
-//
-//        return mainNav;
-//    }
-
     private JPanel buildTimetableNav() {
         JPanel mainNav = new JPanel(new BorderLayout(10, 0));
         mainNav.setOpaque(false);
@@ -158,12 +124,6 @@ public class SchedulesPanel extends JPanel {
     }
 
     // ---- events ----
-
-//    private void wireEvents() {
-//        btnEdit.addActionListener(e -> onEdit());
-//        btnRefresh.addActionListener(e -> loadData(null));
-//    }
-
     private void wireEvents() {
         btnEdit.addActionListener(e -> onEdit());
         btnRefresh.addActionListener(e -> loadData(tfClassSearch.getText().trim()));
@@ -215,7 +175,7 @@ public class SchedulesPanel extends JPanel {
 
         Schedule selected;
         if (scheduleList.size() == 1) {
-            selected = scheduleList.get(0);
+            selected = scheduleList.getFirst();
         } else {
             // Cho user chọn khi có nhiều lịch trong ô
             String[] options = scheduleList.stream()
@@ -237,6 +197,7 @@ public class SchedulesPanel extends JPanel {
     }
 
     private void loadData(String keyword) {
+        CurrentUser u = SecurityContext.get();
         // Vô hiệu hóa nút bấm để tránh người dùng click loạn khi đang load
         btnEdit.setEnabled(false);
         String finalKeyword = (keyword == null) ? "" : keyword.trim();
@@ -248,8 +209,13 @@ public class SchedulesPanel extends JPanel {
                 LocalDate start = model.getMondayOfSelectedWeek();
                 LocalDate end = start.plusDays(6);
 
-                // Gọi service xử lý đa điều kiện: Lịch trong tuần + Tên/Mã lớp
-                return service.findSchedulesByRangeAndClassName(start, end, finalKeyword);
+                if(u.isStudent())
+                    return service.findSchedulesByRangeAndClassName(start, end, finalKeyword)
+                        .stream().filter(s -> s.getAClass()
+                                .getEnrollments().stream().
+                                anyMatch(e -> e.getStudent().getStudentID().equals(u.relatedId())
+                                        && e.getStatus() == EnrollmentStatus.ACCEPT)).toList();
+                else return service.findSchedulesByRangeAndClassName(start, end, finalKeyword);
             }
 
             @Override
@@ -303,19 +269,6 @@ public class SchedulesPanel extends JPanel {
             table.getColumnModel().getColumn(0).setMaxWidth(120);
         }
 
-//        // Tính chiều cao động theo số lịch tối đa trong mỗi hàng
-//        final int BASE_HEIGHT = 60;        // chiều cao cho 1 lịch
-//        final int PER_EXTRA_SCHEDULE = 100; // cộng thêm cho mỗi lịch thứ 2 trở đi
-//
-//        for (int row = 0; row < table.getRowCount(); row++) {
-//            int maxCount = 1;
-//            for (int col = 1; col < table.getColumnCount(); col++) {
-//                int count = model.getSchedulesAt(row, col).size();
-//                if (count > maxCount) maxCount = count;
-//            }
-//            int rowHeight = BASE_HEIGHT + (maxCount - 1) * PER_EXTRA_SCHEDULE;
-//            table.setRowHeight(row, rowHeight);
-//        }
 
         // TỰ ĐỘNG TÍNH CHIỀU CAO DÒNG
         for (int row = 0; row < table.getRowCount(); row++) {

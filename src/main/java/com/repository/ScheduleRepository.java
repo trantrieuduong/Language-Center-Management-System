@@ -95,6 +95,7 @@ public class ScheduleRepository extends BaseRepository<Schedule, Long> {
                             "SELECT s FROM Schedule s " +
                                     "LEFT JOIN FETCH s.aClass c " +
                                     "LEFT JOIN FETCH s.room " +
+                                    "LEFT JOIN FETCH c.enrollments e " +
                                     "WHERE s.date BETWEEN :start AND :end " +
                                     "AND c.className LIKE :classKeyword " +
                                     "ORDER BY s.date, s.startTime", Schedule.class)
