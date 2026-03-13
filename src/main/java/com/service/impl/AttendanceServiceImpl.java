@@ -6,23 +6,21 @@ import com.model.operation.Attendance;
 import com.model.user.UserRole;
 import com.repository.AttendanceRepository;
 import com.security.PermissionChecker;
+import com.stream.AttendanceStreamQueries;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
 public class AttendanceServiceImpl {
     private final AttendanceRepository repo = new AttendanceRepository();
+    private final AttendanceStreamQueries attendanceStreamQueries = new AttendanceStreamQueries();
 
     public List<Attendance> findAll() {
         var u = PermissionChecker.requireAuthenticated();
         if (u.isTeacher()) {
             Long tid = u.relatedId();
-            return repo.findAll().stream()
-                    .filter(a -> a.getSchedule().getAClass() != null
-                            && a.getSchedule().getAClass().getTeacher() != null
-                            && a.getSchedule().getAClass().getTeacher().getTeacherID().equals(tid)
-                    )
-                    .toList();
+            return attendanceStreamQueries.findAttendanceByTeacherId(repo.findAll(), tid);
         }
         if (u.isStudent()) {
             Long sid = u.relatedId();
@@ -46,10 +44,10 @@ public class AttendanceServiceImpl {
         return repo.update(old.get());
     }
 
-    public List<Attendance> search(String classId, Long userId, UserRole userRole) {
+    public List<Attendance> search(Long classId, LocalDate attendanceDate, Long userId, UserRole userRole) {
         PermissionChecker.requireAuthenticated();
         try {
-            return repo.findByClassAndUser(Long.parseLong(classId), userId, userRole);
+            return repo.findByClassAndUser(classId, attendanceDate, userId, userRole);
         } catch (Exception e) {
             throw new BusinessException("Mã lớp học không hợp lệ!");
         }

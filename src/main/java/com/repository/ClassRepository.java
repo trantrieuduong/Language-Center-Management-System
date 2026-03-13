@@ -27,18 +27,6 @@ public class ClassRepository extends BaseRepository<Class, Long> {
         }
     }
 
-    public List<Class> findByTeacher(Long teacherId) {
-        try (EntityManager em = em()) {
-            return em.createQuery(
-                            "SELECT c FROM Class c WHERE c.teacher.teacherID = :tid ORDER BY c.className",
-                            Class.class)
-                    .setParameter("tid", teacherId)
-                    .getResultList();
-        } catch (Exception e) {
-            throw new SystemException("Lỗi truy vấn lớp học theo giáo viên: " + e.getMessage(), e);
-        }
-    }
-
     public List<Class> searchByName(String keyword) {
         try (EntityManager em = em()) {
             return em.createQuery(

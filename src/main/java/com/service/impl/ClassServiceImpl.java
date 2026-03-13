@@ -13,6 +13,7 @@ import com.model.user.Teacher;
 import com.model.user.UserStatus;
 import com.repository.*;
 import com.security.PermissionChecker;
+import com.stream.ClassStreamQueries;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -25,12 +26,16 @@ public class ClassServiceImpl {
     private final TeacherRepository teacherRepo = new TeacherRepository();
     private final RoomRepository roomRepo = new RoomRepository();
     private final ScheduleRepository scheduleRepo = new ScheduleRepository();
+    private final ClassStreamQueries classStreamQueries = new ClassStreamQueries();
 
     public List<Class> findAll() {
         PermissionChecker.requireAuthenticated();
         var u = com.security.SecurityContext.get();
-        if (u != null && u.isTeacher()) {
-            return classRepo.findByTeacher(u.relatedId());
+        if (u != null) {
+            if (u.isTeacher())
+                return classStreamQueries.findClassByTeacher(u.relatedId());
+            else if (u.isStudent())
+                return classStreamQueries.findClassByStudent(u.relatedId());
         }
         return classRepo.findAll();
     }
@@ -51,7 +56,7 @@ public class ClassServiceImpl {
         if (dto.getClassName() == null || dto.getClassName().isBlank())
             throw new ValidationException("Tên lớp không được để trống.");
 
-        List <Class> existing = classRepo.searchByExactName(dto.getClassName());
+        List<Class> existing = classRepo.searchByExactName(dto.getClassName());
         if (!existing.isEmpty())
             throw new BusinessException("Tên lớp không được trùng!");
 
@@ -124,7 +129,7 @@ public class ClassServiceImpl {
         Class old = this.findById(id);
         LocalDate today = LocalDate.now();
 
-        List <Class> existing = classRepo.searchByExactName(dto.getClassName());
+        List<Class> existing = classRepo.searchByExactName(dto.getClassName());
         if (!existing.isEmpty() && !existing.getFirst().getClassID().equals(old.getClassID()))
             throw new BusinessException("Tên lớp không được trùng!");
 

@@ -58,4 +58,9 @@ public class Class {
 
     @OneToMany(mappedBy = "aclass")
     List<Enrollment> enrollments;
+
+    @Override
+    public String toString() {
+        return this.className;
+    }
 }

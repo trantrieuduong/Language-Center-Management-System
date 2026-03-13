@@ -36,10 +36,6 @@ public class Attendance {
     @JoinColumn(name = "schedule_id", nullable = false)
     Schedule schedule;
 
-//    @ManyToOne
-//    @JoinColumn(name = "class_id", nullable = false)
-//    Class aClass;//
-
     @CreationTimestamp
     @Column(name = "created_at")
     LocalDateTime createdAt;
