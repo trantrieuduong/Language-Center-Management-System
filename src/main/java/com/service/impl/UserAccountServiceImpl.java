@@ -18,7 +18,7 @@ public class UserAccountServiceImpl {
         return repo.findAll();
     }
 
-    public UserAccount findById(UUID id){
+    public UserAccount findById(UUID id) {
         PermissionChecker.requireAdminOrAnyStaff();
         Optional<UserAccount> user = repo.findById(id);
         if (user.isPresent())
