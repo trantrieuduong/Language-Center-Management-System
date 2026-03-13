@@ -17,15 +17,6 @@ public class AttendanceServiceImpl {
     private final AttendanceStreamQueries attendanceStreamQueries = new AttendanceStreamQueries();
 
     public List<Attendance> findAll() {
-        var u = PermissionChecker.requireAuthenticated();
-        if (u.isTeacher()) {
-            Long tid = u.relatedId();
-            return attendanceStreamQueries.findAttendanceByTeacherId(repo.findAll(), tid);
-        }
-        if (u.isStudent()) {
-            Long sid = u.relatedId();
-            return sid == null ? List.of() : repo.findByStudent(sid);
-        }
         return repo.findAll();
     }
 
@@ -47,9 +38,13 @@ public class AttendanceServiceImpl {
     public List<Attendance> search(Long classId, LocalDate attendanceDate, Long userId, UserRole userRole) {
         PermissionChecker.requireAuthenticated();
         try {
-            return repo.findByClassAndUser(classId, attendanceDate, userId, userRole);
+            return attendanceStreamQueries.findByClassAndUser(classId, attendanceDate, userId, userRole);
+        } catch (BusinessException e) {
+            throw e;
+        } catch (NullPointerException e) {
+            throw new BusinessException("Dữ liệu điểm danh không hoàn chỉnh! Vui lòng kiểm tra lịch học.", e);
         } catch (Exception e) {
-            throw new BusinessException("Mã lớp học không hợp lệ!");
+            throw new BusinessException("Lỗi khi tìm kiếm điểm danh: " + e.getMessage(), e);
         }
     }
 }

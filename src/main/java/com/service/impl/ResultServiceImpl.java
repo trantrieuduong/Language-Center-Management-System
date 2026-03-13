@@ -16,15 +16,6 @@ public class ResultServiceImpl {
     private final ResultStreamQueries resultStreamQueries = new ResultStreamQueries();
 
     public List<Result> findAll() {
-        var u = PermissionChecker.requireAuthenticated();
-        if (u.isTeacher()) {
-            Long tid = u.relatedId();
-            return resultStreamQueries.filterResultsByTeacherID(repo.findAll(), tid);
-        }
-        if (u.isStudent()) {
-            Long sid = u.relatedId();
-            return sid == null ? List.of() : repo.findByStudent(sid);
-        }
         return repo.findAll();
     }
 
@@ -47,10 +38,10 @@ public class ResultServiceImpl {
         return repo.update(r);
     }
 
-    public List<Result> search(String classId, Long userId, UserRole userRole) {
+    public List<Result> search(Long classId, Long userId, UserRole userRole) {
         PermissionChecker.requireAuthenticated();
         try {
-            return repo.findByClassAndUser(Long.parseLong(classId), userId, userRole);
+            return resultStreamQueries.findByClassAndUser(classId, userId, userRole);
         } catch (Exception e) {
             throw new BusinessException("Mã lớp học không hợp lệ!");
         }

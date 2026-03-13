@@ -49,7 +49,8 @@ public class AttendanceTableModel extends AbstractTableModel {
         return switch (col) {
             case 0 -> a.getStudent() != null ? a.getStudent().getStudentID() : "";
             case 1 -> a.getStudent() != null ? a.getStudent().getFullName() : "";
-            case 2 -> a.getSchedule().getAClass() != null ? a.getSchedule().getAClass().getClassName() : "";
+            case 2 -> a.getSchedule() != null && a.getSchedule().getAClass() != null 
+                    ? a.getSchedule().getAClass().getClassName() : "";
             case 3 -> a.getSchedule() != null ? a.getSchedule().getDate().format(dateFormatter) : "";
             case 4 -> a.getSchedule() != null ? a.getSchedule().getStartTime().format(timeFormatter) : "";
             case 5 -> a.getStatus() != null ? a.getStatus() : "";

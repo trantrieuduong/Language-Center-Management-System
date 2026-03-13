@@ -1,9 +1,11 @@
 package com.ui.panel;
 
 import com.exception.AppException;
+import com.model.academic.Class;
 import com.model.academic.Result;
 import com.security.CurrentUser;
 import com.security.SecurityContext;
+import com.service.impl.ClassServiceImpl;
 import com.service.impl.ResultServiceImpl;
 import com.ui.dialog.ResultDialog;
 import com.ui.table.ResultTableModel;
@@ -23,7 +25,8 @@ public class ResultsPanel extends JPanel {
     private final ResultServiceImpl service = new ResultServiceImpl();
     private final ResultTableModel model = new ResultTableModel();
     private final JTable table = new JTable(model);
-    private final JTextField tfSearch = UiUtil.searchField("Tìm theo mã lớp ...");
+    private final JComboBox<Class> cbClass = new JComboBox<>();
+    private final JButton btnFilter = UiUtil.primaryButton("Lọc");
     private final JButton btnEdit = UiUtil.primaryButton("Sửa");
     private final JButton btnRefresh = new JButton("Làm mới");
 
@@ -38,7 +41,8 @@ public class ResultsPanel extends JPanel {
 
         wireEvents();
         applyRoleVisibility();
-        loadData(null);
+        loadClassList();
+        loadData();
     }
 
     // ---- builders ----
@@ -47,14 +51,13 @@ public class ResultsPanel extends JPanel {
         p.setOpaque(false);
         p.add(UiUtil.sectionTitle("Quản lý Điểm"), BorderLayout.WEST);
 
-        JPanel searchBar = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
-        searchBar.setOpaque(false);
-        searchBar.add(new JLabel("Tìm kiếm:"));
-        searchBar.add(tfSearch);
-        JButton btnSearch = UiUtil.primaryButton("Tìm");
-        btnSearch.addActionListener(e -> loadData(tfSearch.getText().trim()));
-        searchBar.add(btnSearch);
-        p.add(searchBar, BorderLayout.EAST);
+        JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        filterPanel.setOpaque(false);
+        filterPanel.add(new JLabel("Lớp:"));
+        cbClass.setPreferredSize(new Dimension(180, 25));
+        filterPanel.add(cbClass);
+        filterPanel.add(btnFilter);
+        p.add(filterPanel, BorderLayout.EAST);
         return p;
     }
 
@@ -84,8 +87,8 @@ public class ResultsPanel extends JPanel {
     // ---- events ----
     private void wireEvents() {
         btnEdit.addActionListener(e -> onEdit());
-        btnRefresh.addActionListener(e -> loadData(null));
-        tfSearch.addActionListener(e -> loadData(tfSearch.getText().trim()));
+        btnRefresh.addActionListener(e -> loadData());
+        btnFilter.addActionListener(e -> loadData());
     }
 
     private void onEdit() {
@@ -100,19 +103,21 @@ public class ResultsPanel extends JPanel {
         dlg.setVisible(true);
 
         if (dlg.isSuccess()) {
-            loadData(null);
+            loadData();
         }
     }
 
-    private void loadData(String keyword) {
+    private void loadData() {
         btnEdit.setEnabled(false);
+
+        Class selectedClass = (Class) cbClass.getSelectedItem();
+        Long classId = (selectedClass != null) ? selectedClass.getClassID() : null;
 
         new SwingWorker<java.util.List<Result>, Void>() {
             final CurrentUser u = SecurityContext.get();
             @Override
             protected List<Result> doInBackground() {
-                return (keyword == null || keyword.isBlank())?
-                        service.findAll(): service.search(keyword, u.relatedId(), u.role());
+                return service.search(classId, u.relatedId(), u.role());
             }
 
             @Override
@@ -128,6 +133,13 @@ public class ResultsPanel extends JPanel {
                 }
             }
         }.execute();
+    }
+
+    private void loadClassList() {
+        // Xóa toàn bộ item cũ để tránh trùng lặp khi nạp lại
+        cbClass.removeAllItems();
+
+        new ClassServiceImpl().findAll().forEach(cbClass::addItem);
     }
 
     private void handleException(Exception ex) {
