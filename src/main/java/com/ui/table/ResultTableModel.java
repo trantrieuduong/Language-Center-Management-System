@@ -1,6 +1,7 @@
 package com.ui.table;
 
 import com.model.academic.Result;
+import lombok.Getter;
 
 import javax.swing.table.AbstractTableModel;
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ public class ResultTableModel extends AbstractTableModel {
     };
 
 
+    @Getter
     private List<Result> data = new ArrayList<>();
 
     public void setData(List<Result> results) {

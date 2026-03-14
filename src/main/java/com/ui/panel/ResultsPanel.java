@@ -11,11 +11,14 @@ import com.ui.dialog.ResultDialog;
 import com.ui.table.ResultTableModel;
 import com.ui.util.MessageBox;
 import com.ui.util.UiUtil;
+import com.utils.GenericExcelExporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
+import java.time.LocalDate;
 import java.util.List;
 
 public class ResultsPanel extends JPanel {
@@ -29,6 +32,7 @@ public class ResultsPanel extends JPanel {
     private final JButton btnFilter = UiUtil.primaryButton("Lọc");
     private final JButton btnEdit = UiUtil.primaryButton("Sửa");
     private final JButton btnRefresh = new JButton("Làm mới");
+    private final JButton btnExport = new JButton("Xuất Excel");
 
     public ResultsPanel() {
         setLayout(new BorderLayout(10, 10));
@@ -74,6 +78,7 @@ public class ResultsPanel extends JPanel {
         p.setOpaque(false);
         p.add(btnEdit);
         p.add(btnRefresh);
+        p.add(btnExport);
         return p;
     }
 
@@ -82,6 +87,7 @@ public class ResultsPanel extends JPanel {
         CurrentUser u = SecurityContext.get();
         boolean canWrite = u != null && (u.isAdmin() || u.isTeacher());
         btnEdit.setVisible(canWrite);
+        btnExport.setVisible(canWrite);
     }
 
     // ---- events ----
@@ -89,6 +95,7 @@ public class ResultsPanel extends JPanel {
         btnEdit.addActionListener(e -> onEdit());
         btnRefresh.addActionListener(e -> loadData());
         btnFilter.addActionListener(e -> loadData());
+        btnExport.addActionListener(e -> onExportExcel());
     }
 
     private void onEdit() {
@@ -115,6 +122,7 @@ public class ResultsPanel extends JPanel {
 
         new SwingWorker<java.util.List<Result>, Void>() {
             final CurrentUser u = SecurityContext.get();
+
             @Override
             protected List<Result> doInBackground() {
                 return service.search(classId, u.relatedId(), u.role());
@@ -140,6 +148,35 @@ public class ResultsPanel extends JPanel {
         cbClass.removeAllItems();
 
         new ClassServiceImpl().findAll().forEach(cbClass::addItem);
+    }
+
+    private void onExportExcel() {
+        List<Result> currentData = model.getData();
+        if (currentData.isEmpty()) {
+            MessageBox.warn(this, "Không có dữ liệu để xuất!");
+            return;
+        }
+
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle("Chọn nơi lưu file Excel");
+        fileChooser.setSelectedFile(new java.io.File("BangDiem_" + LocalDate.now() + ".xlsx"));
+
+        if (fileChooser.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {//hằng số để kiểm tra xem người dùng đã nhấn nút Save/Open hay chưa
+            String path = fileChooser.getSelectedFile().getAbsolutePath();
+            if (!path.endsWith(".xlsx")) path += ".xlsx";
+
+            GenericExcelExporter<Result> exporter = new GenericExcelExporter<>();
+            String[] headers = {"Mã học viên", "Tên học viên", "Điểm"};
+
+            String[] fields = {"student.studentID", "student.fullName", "score"};
+
+            try {
+                exporter.export(currentData, path, "Báo cáo điểm lớp " + currentData.getFirst().getAClass().getClassName(), headers, fields);
+                MessageBox.info(this, "Xuất Excel thành công!");
+            } catch (IOException ex) {
+                MessageBox.error(this, "Lỗi xuất file: " + ex.getMessage());
+            }
+        }
     }
 
     private void handleException(Exception ex) {

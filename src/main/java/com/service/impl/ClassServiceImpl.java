@@ -219,11 +219,6 @@ public class ClassServiceImpl {
         return updatedClass;
     }
 
-    public void delete(Long id) {
-        PermissionChecker.requireAdmin();
-        classRepo.delete(id);
-    }
-
     public static List<LocalDate> calculateStudyDays(
             LocalDate startDate,
             int totalSessions,

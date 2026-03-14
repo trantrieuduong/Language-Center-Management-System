@@ -26,7 +26,6 @@ public class ClassesPanel extends JPanel {
     private final JTextField tfSearch = UiUtil.searchField("Tìm theo tên...");
     private final JButton btnAdd = UiUtil.primaryButton("Thêm");
     private final JButton btnEdit = UiUtil.primaryButton("Sửa");
-    private final JButton btnDelete = UiUtil.dangerButton("Xóa");
     private final JButton btnRefresh = new JButton("Làm mới");
 
     public ClassesPanel() {
@@ -74,7 +73,6 @@ public class ClassesPanel extends JPanel {
         p.setOpaque(false);
         p.add(btnAdd);
         p.add(btnEdit);
-        p.add(btnDelete);
         p.add(btnRefresh);
         return p;
     }
@@ -86,7 +84,6 @@ public class ClassesPanel extends JPanel {
         boolean canWrite = u != null && (u.isAdmin() || u.isConsultant());
         btnAdd.setVisible(canWrite);
         btnEdit.setVisible(canWrite);
-        btnDelete.setVisible(canWrite);
     }
 
     // ---- events ----
@@ -94,7 +91,6 @@ public class ClassesPanel extends JPanel {
     private void wireEvents() {
         btnAdd.addActionListener(e -> onAdd());
         btnEdit.addActionListener(e -> onEdit());
-        btnDelete.addActionListener(e -> onDelete());
         btnRefresh.addActionListener(e -> loadData(null));
         tfSearch.addActionListener(e -> loadData(tfSearch.getText().trim()));
     }
@@ -124,41 +120,9 @@ public class ClassesPanel extends JPanel {
         }
     }
 
-    private void onDelete() {
-        int row = table.getSelectedRow();
-        if (row < 0) {
-            MessageBox.warn(this, "Vui lòng chọn một lớp học để xóa.");
-            return;
-        }
-        Class selected = model.getRow(row);
-
-        if (!MessageBox.confirm(this, "Bạn có chắc muốn xóa lớp học: " + selected.getClassName() + "?"))
-            return;
-
-        new SwingWorker<Void, Void>() {
-            @Override
-            protected Void doInBackground() {
-                service.delete(selected.getClassID());
-                return null;
-            }
-
-            @Override
-            protected void done() {
-                try {
-                    get();
-                    MessageBox.info(ClassesPanel.this, "Đã xóa lớp học.");
-                    loadData(null);
-                } catch (Exception ex) {
-                    handleException(ex);
-                }
-            }
-        }.execute();
-    }
-
     private void loadData(String keyword) {
         btnAdd.setEnabled(false);
         btnEdit.setEnabled(false);
-        btnDelete.setEnabled(false);
 
         new SwingWorker<java.util.List<Class>, Void>() {
             @Override
@@ -179,7 +143,6 @@ public class ClassesPanel extends JPanel {
                     boolean canWrite = u != null && (u.isAdmin() || u.isConsultant());
                     btnAdd.setEnabled(canWrite);
                     btnEdit.setEnabled(canWrite);
-                    btnDelete.setEnabled(canWrite);
                 }
             }
         }.execute();

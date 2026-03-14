@@ -212,13 +212,7 @@ public class ClassDialog extends JDialog {
             warn("Vui lòng chọn ngày bắt đầu!");
             return;
         }
-        LocalDate startDate = changeDateToLocalDate(dateFromChooser);
 
-        if (startDate.isBefore(LocalDate.now())) {
-            warn("Ngày bắt đầu phải từ hôm nay trở đi!");
-            return;
-        }
-        dto.setStartDate(startDate);
         dto.setDaysOfWeek(getSelectedDaysString(weekdaysCheckBoxes));
 
         ButtonModel selectedModel = periodGroup.getSelection();
@@ -227,8 +221,14 @@ public class ClassDialog extends JDialog {
             return;
         }
 
+        LocalDate startDate = changeDateToLocalDate(dateFromChooser);
         Period selectedPeriod = Period.valueOf(selectedModel.getActionCommand());
-
+        if (existing == null
+                && (startDate.isBefore(LocalDate.now()) || (startDate.isEqual(LocalDate.now()) && selectedPeriod.getStartTime().isBefore(LocalTime.now())))) {
+            warn("Thời gian bắt đầu tại ngày hoặc ca học không hợp lệ (bắc buộc phải từ hiện tại trở đi)!");
+            return;
+        }
+        dto.setStartDate(startDate);
         dto.setStartTime(selectedPeriod.getStartTime());
         dto.setEndTime(selectedPeriod.getEndTime());
 

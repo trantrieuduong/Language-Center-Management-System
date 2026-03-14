@@ -50,11 +50,6 @@ public class RoomServiceImpl {
         return repo.update(old.get());
     }
 
-    public void delete(Long id) {
-        PermissionChecker.requireAdmin();
-        repo.delete(id);
-    }
-
     public List<Room> search(String keyword){
         PermissionChecker.requireAuthenticated();
         return keyword == null || keyword.isBlank() ? repo.findAll(): repo.searchByName(keyword);
