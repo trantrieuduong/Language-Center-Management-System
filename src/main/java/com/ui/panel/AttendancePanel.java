@@ -108,6 +108,7 @@ public class AttendancePanel extends JPanel {
         btnEdit.addActionListener(e -> onEdit());
         btnRefresh.addActionListener(e -> {
             dcAttendanceDate.setDate(new java.util.Date());
+            loadClassList();
             loadData();
         });
         btnFilter.addActionListener(e -> loadData());
