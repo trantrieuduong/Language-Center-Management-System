@@ -27,18 +27,6 @@ public class ClassRepository extends BaseRepository<Class, Long> {
         }
     }
 
-    public List<Class> searchByName(String keyword) {
-        try (EntityManager em = em()) {
-            return em.createQuery(
-                            "SELECT c FROM Class c WHERE LOWER(c.className) LIKE :kw ORDER BY c.className",
-                            Class.class)
-                    .setParameter("kw", "%" + keyword.toLowerCase() + "%")
-                    .getResultList();
-        } catch (Exception e) {
-            throw new SystemException("Lỗi tìm kiếm lớp học: " + e.getMessage(), e);
-        }
-    }
-
     public List<Class> searchByExactName(String name) {
         try (EntityManager em = em()) {
             return em.createQuery(
@@ -48,18 +36,6 @@ public class ClassRepository extends BaseRepository<Class, Long> {
                     .getResultList();
         } catch (Exception e) {
             throw new SystemException("Lỗi tìm kiếm lớp học: " + e.getMessage(), e);
-        }
-    }
-
-    public long countEnrollments(Long classId) {
-        try (EntityManager em = em()) {
-            Long count = em.createQuery(
-                            "SELECT COUNT(e) FROM Enrollment e WHERE e.aclass.classID = :cid", Long.class)
-                    .setParameter("cid", classId)
-                    .getSingleResult();
-            return count == null ? 0 : count;
-        } catch (Exception e) {
-            throw new SystemException("Lỗi đếm số học viên lớp: " + e.getMessage(), e);
         }
     }
 

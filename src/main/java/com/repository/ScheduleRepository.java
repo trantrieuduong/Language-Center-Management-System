@@ -7,7 +7,6 @@ import jakarta.persistence.EntityTransaction;
 
 import java.time.LocalDate;
 
-import java.time.LocalTime;
 import java.util.List;
 
 public class ScheduleRepository extends BaseRepository<Schedule, Long> {
@@ -59,7 +58,7 @@ public class ScheduleRepository extends BaseRepository<Schedule, Long> {
         } catch (Exception e) {
             if (tx.isActive())
                 tx.rollback();
-            throw new SystemException("Lỗi xóa lịch học tương lai theo lớp: " + e.getMessage(), e);
+            throw new SystemException("Lỗi xóa lịch học tương lai theo lớp: " + "Không thể xóa các lịch học cũ vì đã có dữ liệu điểm danh liên quan! Hủy thao tác!", e);
         } finally {
             em.close();
         }

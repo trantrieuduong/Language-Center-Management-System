@@ -12,6 +12,7 @@ import com.model.user.StaffRole;
 import com.model.user.Teacher;
 import com.model.user.UserStatus;
 import com.repository.*;
+import com.security.CurrentUser;
 import com.security.PermissionChecker;
 import com.stream.ClassStreamQueries;
 import com.stream.ScheduleStreamQueries;
@@ -49,8 +50,15 @@ public class ClassServiceImpl {
     }
 
     public List<Class> search(String keyword) {
-        PermissionChecker.requireAuthenticated();
-        return keyword == null || keyword.isBlank() ? classRepo.findAll() : classRepo.searchByName(keyword);
+        CurrentUser user = PermissionChecker.requireAuthenticated();
+        List<Class> classFilterByName = keyword == null || keyword.isBlank() ? classRepo.findAll() : classStreamQueries.filterByName(classRepo.findAll(), keyword.trim());
+
+        if (user.isTeacher())
+            return classStreamQueries.filterByTeacher(classFilterByName, user.relatedId());
+        else if (user.isStudent())
+            return classStreamQueries.filterByStudent(classFilterByName, user.relatedId());
+        else
+            return classFilterByName;
     }
 
     public Class save(ClassDTO dto) throws Exception {
@@ -95,7 +103,6 @@ public class ClassServiceImpl {
             }
         }
 
-
         Class aClass = Class.builder()
                 .className(dto.getClassName().trim())
                 .maxStudent(dto.getMaxStudent())
@@ -136,9 +143,9 @@ public class ClassServiceImpl {
 
         Optional<Course> course = courseRepo.findById(dto.getCourseID());
         if (course.isEmpty())
-            throw new BusinessException("Mã khóa học không tồn tại! Hãy nhập một mã khóa học khác!");
+            throw new BusinessException("Khóa học không tồn tại! Hãy chọn một khóa học khác!");
         else if (course.get().getStatus() != CourseStatus.ACTIVE)
-            throw new BusinessException("Khóa học chưa sẵn sàng! Hãy nhập một mã khóa học khác!");
+            throw new BusinessException("Khóa học chưa sẵn sàng! Hãy chọn một khóa học khác!");
 
         Optional<Room> room = roomRepo.findById(dto.getRoomID());
         if (room.isEmpty())
@@ -200,9 +207,10 @@ public class ClassServiceImpl {
         old.setStartDate(dto.getStartDate());
         old.setEndDate(newEndDate);
 
-        Class updatedClass = classRepo.update(old);
         // Đồng bộ Schedule: XÓA LỊCH TƯƠNG LAI - GIỮ LỊCH QUÁ KHỨ
         scheduleRepo.deleteFutureSchedulesByClassId(id, today);
+
+        Class updatedClass = classRepo.update(old);
 
         // Chèn lịch học mới cho tương lai
         for (LocalDate date : futureStudyDays) {

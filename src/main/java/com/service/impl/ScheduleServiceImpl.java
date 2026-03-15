@@ -70,10 +70,6 @@ public class ScheduleServiceImpl {
         PermissionChecker.requireAdminOrStaff(StaffRole.CONSULTANT);
 
         Optional<Class> aClass = classRepo.findById(dto.getClassID());
-        if (aClass.isEmpty())
-            throw new BusinessException("Mã lớp học không tồn tại! Hãy nhập một mã lớp học khác!");
-        else if (aClass.get().getStatus() != ClassStatus.ACTIVE)
-            throw new BusinessException("Lớp học chưa sẵn sàng! Hãy nhập một mã lớp học khác!");
 
         Optional<Room> room = roomRepo.findById(dto.getRoomID());
         if (room.isEmpty())

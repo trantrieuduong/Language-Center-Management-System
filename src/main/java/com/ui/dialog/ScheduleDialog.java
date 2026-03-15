@@ -4,7 +4,6 @@ import com.dto.ScheduleDTO;
 import com.model.operation.Period;
 import com.model.operation.Schedule;
 import com.service.impl.ScheduleServiceImpl;
-import com.toedter.calendar.JDateChooser;
 import com.ui.util.JTextFieldPlaceholder;
 import com.ui.util.MessageBox;
 import com.ui.util.UiUtil;
@@ -13,6 +12,7 @@ import lombok.Getter;
 import javax.swing.*;
 import java.awt.*;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
@@ -119,8 +119,8 @@ public class ScheduleDialog extends JDialog {
             return;
         }
 
-        String date = tfDate.getText().trim();
-        if (date.isEmpty()) {
+        String dateStr = tfDate.getText().trim();
+        if (dateStr.isEmpty()) {
             warn("Ngày học không được để trống!");
             return;
         }
@@ -141,8 +141,10 @@ public class ScheduleDialog extends JDialog {
             return;
         }
 
+        LocalDate date;
         try {
-            dto.setDate(LocalDate.parse(date, dateFormatter));
+            date = LocalDate.parse(dateStr, dateFormatter);
+            dto.setDate(date);
         } catch (DateTimeParseException e) {
             warn("Ngày học không hợp lệ! (Vui lòng nhập theo định dạng (dd/MM/yyyy) và phải là ngày, tháng, năm hợp lệ!)");
             return;
@@ -155,7 +157,12 @@ public class ScheduleDialog extends JDialog {
         }
 
         Period selectedPeriod = Period.valueOf(selectedModel.getActionCommand());
-
+        if (date.isBefore(LocalDate.now())
+                || (date.isEqual(LocalDate.now()) && selectedPeriod.getStartTime().isBefore(LocalTime.now()))) {
+            warn("Thời gian học hoặc ca học không hợp lệ (bắc buộc phải từ hiện tại trở đi)!");
+            return;
+        }
+        dto.setDate(date);
         dto.setStartTime(selectedPeriod.getStartTime());
         dto.setEndTime(selectedPeriod.getEndTime());
 

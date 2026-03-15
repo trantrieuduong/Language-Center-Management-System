@@ -86,9 +86,7 @@ public class EnrollmentsPanel extends JPanel {
 
     // ---- events ----
     private void wireEvents() {
-        btnAdd.addActionListener(e -> {
-            onAdd();
-        });
+        btnAdd.addActionListener(e -> onAdd());
         btnRefresh.addActionListener(e -> loadData(null));
         tfSearch.addActionListener(e -> loadData(tfSearch.getText().trim()));
     }

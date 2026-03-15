@@ -40,11 +40,10 @@ public class ScheduleStreamQueries {
             return schedules.stream()
                     .filter(s-> !s.getDate().isBefore(start)
                             && !s.getDate().isAfter(end)
-                            && s.getClass().getName().contains(classKeyword == null ? "" : classKeyword))
+                            && s.getAClass().getClassName().toLowerCase().contains(classKeyword == null ? "" : classKeyword.trim()))
                     .sorted(Comparator.comparing(Schedule::getDate).thenComparing(Schedule::getStartTime))
                     .toList();
     }
-
 
     /**
      * Dùng khi sửa lịch học (có schedule Id)
